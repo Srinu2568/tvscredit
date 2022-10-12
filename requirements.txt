@@ -4,5 +4,4 @@ requests==2.26.0
 streamlit==1.13.0
 streamlit_lottie==0.0.3
 streamlit_option_menu==0.3.2
-date_time==4.7
 streamlit_authenticator==0.2.1
