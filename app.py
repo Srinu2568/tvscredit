@@ -60,10 +60,6 @@ usernames = ['pparker', 'srinu']
 # Hash the passwords
 passwords = stauth.Hasher(['123', '456']).generate()
 
-# Load hashed passwords
-file_path = Path(__file__).parent / 'hashed_pw.pkl'
-with file_path.open('rb') as file:
-    hashed_passwords = pickle.load(file)
 
 credentials = {"usernames":{}}
 
