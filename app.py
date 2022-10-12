@@ -1,9 +1,12 @@
 import streamlit as st
+import pickle
+from pathlib import Path
 import requests
 from streamlit_option_menu import option_menu
 from streamlit_lottie import st_lottie
 import time
 import datetime as dt
+import streamlit_authenticator as stauth
 
 
 # ---data for selecting in the form---
@@ -46,325 +49,372 @@ st.set_page_config(page_title='TVS CREDIT Vehicle Valuation', page_icon='./logo/
 html = f"""<a href='{'https://www.tvscredit.com/'}'><img src='https://www.tvscredit.com/media/1927/tvs-credit-logo-01.png' width='200' height='50'></a>"""
 st.markdown(html, unsafe_allow_html=True)
 
-# st.image('./logo/tvs_logo.png')
 
+# ------------------------------------------------------------------------------
+# User Authentication
+
+names = ['Peter Parker', 'Srinu']
+usernames = ['pparker', 'srinu']
+# passwords = ['123', '456']
+
+# Hash the passwords
+passwords = stauth.Hasher(['123', '456']).generate()
+
+# Load hashed passwords
+file_path = Path(__file__).parent / 'hashed_pw.pkl'
+with file_path.open('rb') as file:
+    hashed_passwords = pickle.load(file)
+
+credentials = {"usernames":{}}
+
+for un, name, pw in zip(usernames, names, passwords):
+    user_dict = {"name":name,"password":pw}
+    credentials["usernames"].update({un:user_dict})
+
+authenticator = stauth.Authenticate(credentials,'some_cookie_name','some_signature_key',cookie_expiry_days=30)
+name, authentication_status, username = authenticator.login('Login', 'main')
     
 
-with st.sidebar:
-    selected = option_menu(
-        menu_title = 'Menu',
-        options = ['Home', 'Car', 'Bike', 'Contact'],
-        icons = ['house', '', 'bicycle', 'envelope'],
-        menu_icon = 'cast',
-    )
+if authentication_status:
+    st.write(f'Welcome *{name}*')
+    st.title('Some content')
+elif authentication_status == False:
+    st.error('Username/password is incorrect')
+elif authentication_status == None:
+    st.warning('Please enter your username and password')
 
-# Home Page
-if selected == 'Home':
-    def load_lottieurl(url):
-        r = requests.get(url)
-        if r.status_code != 200:
-            return None
-        else:
-            return r.json()
-    # API DOC URL FOR CAR
-    URL = 'https://tvs-price-predictor.herokuapp.com/docs'
-    # API DOC URL FOR BIKE
-    URL2 = 'https://tvs-price-predictor-bike.herokuapp.com/docs'
-
-    # ---stack lottie transition---
-    lottie_api = load_lottieurl('https://assets10.lottiefiles.com/packages/lf20_8NYY2Y.json')
-
-    with st.container():
-        # ------ HEADER SECTION-------
-        left_column, right_column = st.columns(2)
-        with left_column:
-            st.title('TVS CREDIT - Effortless Price Predictions by AI:speech_balloon:')
-            st.subheader('As per the trends in market :chart_with_upwards_trend:')
-            st.write('''A few years ago, the ratio of new cars to used cars 
-            was 1:1.2 which is now at 1:2.2. The used car market in India 
-            has been the center of attention in the slow growing 
-            automotive industry in India.''')
-            st.subheader('How our API is helpful :star:')
-            st.write('''Keeping the demand of used cars in mind, 
-            This website helps users to predict the price to sell/buy the car
-            with the help of AI and ML.''')
-            st.subheader('How to use? :hushed:')
-            st.write('The API is encoded, only the website can decode and call it.')
-            st.write('Check out the API here :fire:')
-            st.write('[Learn More >](https://tvs-price-predictor.herokuapp.com/docs)')
-        # Lottie element
-        with right_column:
-            st_lottie(lottie_api, height=300, key='api')
-
-# Car Page
-if selected == 'Car':
-    st.header('GET THE PRICE OF USED CAR')
-    # Form to take data from user
-    col1, col2 = st.columns(2)
-    with col1:
-        with st.form(key='form1'):
-            # car = st.text_input('Car Model')
-            car = st.selectbox('Car Model', options=carlist)
-            car = dctcar[car]
-            # location = st.text_input('Location')
-            location = st.selectbox('Location', options=loclist)
-            location = dctloc[location]
-            # year = st.text_input('Year')
-            year = st.selectbox('Year', options=yearlist)
-            year = dctyear[year]
-            km_driven = st.text_input('Kms Driven (Enter accurate value for better results)')
-            # owner_type = st.text_input('Owner Type')
-            owner_type = st.selectbox('Owner Type', options=ownerlist)
-            owner_type = dctowner[owner_type]
-            # fuel_type = st.text_input('Fuel Type')
-            fuel_type = st.selectbox('Fuel Type', options=fuellist)
-            fuel_type = dctfuel[fuel_type]
-            power = st.text_input('Power in bhp')
-            # power = int(power)
-            price = st.text_input('Original Price in lakhs(Example: 13.56 lakhs)')
+# if authentication_status True
+if authentication_status:
 
 
-            # ---Submit Button---
-            submit_button = st.form_submit_button(label='Get Car Price')
-            # if submit_button:
-            #     st.success('Thanks for using!')
 
 
-            if submit_button and (km_driven=="" or power == "" or price == ""):
-                # st.success('Thanks for using!')
-                st.warning('You have missed some fields to fill in!')
-            elif km_driven=="" or power == "" or price == "":
-                st.warning('Please fill out all the fields!')
-            else:
-                st.success('Thanks for Filling!')
-                # ---Calling the API---
-                URL = 'https://tvs-price-predictor.herokuapp.com/predict'
-
-                # Best Condition Pred
-                PARAMS = {
-                "Car": car,
-                "Location": location,
-                "Year": year,
-                "Kilometers_Driven": km_driven,
-                "Owner_Type": owner_type,
-                "Fuel_Type": fuel_type,
-                "Power": power
-                }
-                # Good condition Pred
-                PARAMS2 = {
-                "Car": car,
-                "Location": location,
-                "Year": int(year-3),
-                "Kilometers_Driven": km_driven,
-                "Owner_Type": owner_type,
-                "Fuel_Type": fuel_type,
-                "Power": power
-                }
-                # if submit_button:    
-                #     response = requests.post(URL, json=PARAMS)
-                    # st.write(response.json()['prediction'])
 
 
-        # ---Result---
-        if submit_button and not (km_driven=="" or power == "" or price == ""):
-            # Wait transition
-            with st.spinner('Wait for it...'):
-                response = requests.post(URL, json=PARAMS)
-                response2 = requests.post(URL, json=PARAMS2)
-            # st.success('Done!')
-            # response = requests.post(URL, json=PARAMS)
-            # st.write(response.json()['prediction'])
+    
+    
+    # Sidebar
+    with st.sidebar:
+        selected = option_menu(
+            menu_title = 'Menu',
+            options = ['Home', 'Car', 'Bike', 'Contact'],
+            icons = ['house', '', 'bicycle', 'envelope'],
+            menu_icon = 'cast',
+        )
+        # Logout
+        authenticator.logout('Logout', 'main')
+        if authentication_status:
+            try:
+                if authenticator.reset_password(username, 'Reset password'):
+                    st.success('Password modified successfully')
+            except Exception as e:
+                st.error(e)
 
-            # ---Progress bar---
-            # Original Price
-            org_price = float(price)
-            st.write('Original Price', org_price)
-
-            # For Best Price
-            resp_result = response.json()['prediction']
-            st.write('Best Price ', resp_result)
-            my_bar = st.progress(100) # set to original price
-
-            perc_resp = int((resp_result/org_price)*100)
-            for percent_complete in range(perc_resp):
-                time.sleep(0.001)
-                my_bar.progress(percent_complete + 1)
-
-            # For Average Price
-            resp_result2 = response2.json()['prediction']
-            st.write('Average Price ', resp_result2)
-            perc_resp2 = int((resp_result2/org_price)*100)
-            my_bar2 = st.progress(100) # set to original price
-
-            for percent_complete in range(perc_resp2):
-                time.sleep(0.001)
-                my_bar2.progress(percent_complete + 1)
-    with col2:
+    # Home Page
+    if selected == 'Home':
         def load_lottieurl(url):
             r = requests.get(url)
             if r.status_code != 200:
                 return None
             else:
                 return r.json()
-        lottie_api = load_lottieurl('https://assets5.lottiefiles.com/packages/lf20_kqfglvmb.json')
-        st_lottie(lottie_api, height=500, key='api')
+        # API DOC URL FOR CAR
+        URL = 'https://tvs-price-predictor.herokuapp.com/docs'
+        # API DOC URL FOR BIKE
+        URL2 = 'https://tvs-price-predictor-bike.herokuapp.com/docs'
+
+        # ---stack lottie transition---
+        lottie_api = load_lottieurl('https://assets10.lottiefiles.com/packages/lf20_8NYY2Y.json')
+
+        with st.container():
+            # ------ HEADER SECTION-------
+            left_column, right_column = st.columns(2)
+            with left_column:
+                st.title('TVS CREDIT - Effortless Price Predictions by AI:speech_balloon:')
+                st.subheader('As per the trends in market :chart_with_upwards_trend:')
+                st.write('''A few years ago, the ratio of new cars to used cars 
+                was 1:1.2 which is now at 1:2.2. The used car market in India 
+                has been the center of attention in the slow growing 
+                automotive industry in India.''')
+                st.subheader('How our API is helpful :star:')
+                st.write('''Keeping the demand of used cars in mind, 
+                This website helps users to predict the price to sell/buy the car
+                with the help of AI and ML.''')
+                st.subheader('How to use? :hushed:')
+                st.write('The API is encoded, only the website can decode and call it.')
+                st.write('Check out the API here :fire:')
+                st.write('[Learn More >](https://tvs-price-predictor.herokuapp.com/docs)')
+            # Lottie element
+            with right_column:
+                st_lottie(lottie_api, height=300, key='api')
+
+    # Car Page
+    if selected == 'Car':
+        st.header('GET THE PRICE OF USED CAR')
+        # Form to take data from user
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.form(key='form1'):
+                # car = st.text_input('Car Model')
+                car = st.selectbox('Car Model', options=carlist)
+                car = dctcar[car]
+                # location = st.text_input('Location')
+                location = st.selectbox('Location', options=loclist)
+                location = dctloc[location]
+                # year = st.text_input('Year')
+                year = st.selectbox('Year', options=yearlist)
+                year = dctyear[year]
+                km_driven = st.text_input('Kms Driven (Enter accurate value for better results)')
+                # owner_type = st.text_input('Owner Type')
+                owner_type = st.selectbox('Owner Type', options=ownerlist)
+                owner_type = dctowner[owner_type]
+                # fuel_type = st.text_input('Fuel Type')
+                fuel_type = st.selectbox('Fuel Type', options=fuellist)
+                fuel_type = dctfuel[fuel_type]
+                power = st.text_input('Power in bhp')
+                # power = int(power)
+                price = st.text_input('Original Price in lakhs(Example: 13.56 lakhs)')
 
 
-if selected == 'Bike':
-    st.header('GET THE PRICE OF USED BIKE')
-    # Form to take data from user
-    col1, col2 = st.columns(2)
-    with col1:
-        with st.form(key='form2'):
-            bike = st.selectbox('Bike Model', options=bikelist)
-            bike = dctbike[bike]
-            # location = st.text_input('Location')
-            city = st.selectbox('Location', options=citylist)
-            city = dctcity[city]
-            # year = st.text_input('Year')
-            bike_year = st.selectbox('Year', options=yearlist)
-            if bike_year == 'less than 2003':
-                bike_year = 2002   
-            age = int(dt.date.today().year)-int(bike_year)                # Present year - selling year
-            # Km_driven by bike
-            km_driven_bike = st.text_input('Kms Driven (Enter accurate value for better results)')
-            # owner_type = st.text_input('Owner Type')
-            owner_type_bike = st.selectbox('Owner Type', options=ownerlistbike)
-            owner_type_bike = dctownerbike[owner_type_bike]
-            # brand of bike
-            bike_brand = st.selectbox('Brand', options=brandlist)
-            bike_brand = dctbrand[bike_brand]
-            # Power of bike (Horse Power)
-            bike_power = st.text_input('Power in bhp')
-            # power = int(power)
-            bike_price = st.text_input('Original Price')
+                # ---Submit Button---
+                submit_button = st.form_submit_button(label='Get Car Price')
+                # if submit_button:
+                #     st.success('Thanks for using!')
 
 
-            # ---Submit Button---
-            submit_button2 = st.form_submit_button(label='Get Bike Price')
-            # if submit_button:
-            #     st.success('Thanks for using!')
+                if submit_button and (km_driven=="" or power == "" or price == ""):
+                    # st.success('Thanks for using!')
+                    st.warning('You have missed some fields to fill in!')
+                elif km_driven=="" or power == "" or price == "":
+                    st.warning('Please fill out all the fields!')
+                else:
+                    st.success('Thanks for Filling!')
+                    # ---Calling the API---
+                    URL = 'https://tvs-price-predictor.herokuapp.com/predict'
+
+                    # Best Condition Pred
+                    PARAMS = {
+                    "Car": car,
+                    "Location": location,
+                    "Year": year,
+                    "Kilometers_Driven": km_driven,
+                    "Owner_Type": owner_type,
+                    "Fuel_Type": fuel_type,
+                    "Power": power
+                    }
+                    # Good condition Pred
+                    PARAMS2 = {
+                    "Car": car,
+                    "Location": location,
+                    "Year": int(year-3),
+                    "Kilometers_Driven": km_driven,
+                    "Owner_Type": owner_type,
+                    "Fuel_Type": fuel_type,
+                    "Power": power
+                    }
+                    # if submit_button:    
+                    #     response = requests.post(URL, json=PARAMS)
+                        # st.write(response.json()['prediction'])
 
 
-            if submit_button2 and (km_driven_bike=="" or bike_power == "" or bike_price == ""):
-                # st.success('Thanks for using!')
-                st.warning('You have missed some fields to fill in!')
-            elif km_driven_bike=="" or bike_power == "" or bike_price == "":
-                st.warning('Please fill out all the fields!')
-            else:
-                st.success('Thanks for Filling!')
-                # ---Calling the API---
-                URL = 'https://tvs-price-predictor-bike.herokuapp.com/bike-predict'
+            # ---Result---
+            if submit_button and not (km_driven=="" or power == "" or price == ""):
+                # Wait transition
+                with st.spinner('Wait for it...'):
+                    response = requests.post(URL, json=PARAMS)
+                    response2 = requests.post(URL, json=PARAMS2)
+                # st.success('Done!')
+                # response = requests.post(URL, json=PARAMS)
+                # st.write(response.json()['prediction'])
 
-                # Best Condition Pred
-                PARAMS = {
-                "bike_name": bike,
-                "city": city,
-                "kms_driven": km_driven_bike,
-                "owner": owner_type_bike,
-                "age": age,
-                "power": bike_power,
-                "brand": bike_brand
-                }
-                # Good condition Pred
-                PARAMS2 = {
-                "bike_name": bike,
-                "city": city,
-                "kms_driven": km_driven_bike,
-                "owner": owner_type_bike,
-                "age": int(int(age)+3),
-                "power": bike_power,
-                "brand": bike_brand
-                }
-                # if submit_button:    
-                #     response = requests.post(URL, json=PARAMS)
-                    # st.write(response.json()['prediction'])
+                # ---Progress bar---
+                # Original Price
+                org_price = float(price)
+                st.write('Original Price', org_price)
 
+                # For Best Price
+                resp_result = response.json()['prediction']
+                st.write('Best Price ', resp_result)
+                my_bar = st.progress(100) # set to original price
 
-        # ---Result---
-        if submit_button2 and not (km_driven_bike=="" or bike_power == "" or bike_price == ""):
-            # Wait transition
-            with st.spinner('Wait for it...'):
-                bike_response = requests.post(URL, json=PARAMS)
-                bike_response2 = requests.post(URL, json=PARAMS2)
-            # st.success('Done!')
-            # response = requests.post(URL, json=PARAMS)
-            # st.write(response.json()['prediction'])
+                perc_resp = int((resp_result/org_price)*100)
+                for percent_complete in range(perc_resp):
+                    time.sleep(0.001)
+                    my_bar.progress(percent_complete + 1)
 
-            # ---Progress bar---
-            # Original Price
-            bike_org_price = float(bike_price)
-            st.write('Original Price', bike_org_price)
+                # For Average Price
+                resp_result2 = response2.json()['prediction']
+                st.write('Average Price ', resp_result2)
+                perc_resp2 = int((resp_result2/org_price)*100)
+                my_bar2 = st.progress(100) # set to original price
 
-            # For Best Price
-            bike_resp_result = bike_response.json()['bike_price_prediction']
-            st.write('Best Price ', bike_resp_result)
-            my_bar_bike = st.progress(100) # set to original price
+                for percent_complete in range(perc_resp2):
+                    time.sleep(0.001)
+                    my_bar2.progress(percent_complete + 1)
+        with col2:
+            def load_lottieurl(url):
+                r = requests.get(url)
+                if r.status_code != 200:
+                    return None
+                else:
+                    return r.json()
+            lottie_api = load_lottieurl('https://assets5.lottiefiles.com/packages/lf20_kqfglvmb.json')
+            st_lottie(lottie_api, height=500, key='api')
 
-            bike_perc_resp = int((bike_resp_result/bike_org_price)*100)
-            for percent_complete in range(bike_perc_resp):
-                time.sleep(0.001)
-                my_bar_bike.progress(percent_complete + 1)
-
-            # For Average Price
-            bike_resp_result2 = bike_response2.json()['bike_price_prediction']
-            st.write('Average Price ', bike_resp_result2)
-            bike_perc_resp2 = int((bike_resp_result2/bike_org_price)*100)
-            bike_my_bar2 = st.progress(100) # set to original price
-
-            for percent_complete in range(bike_perc_resp2):
-                time.sleep(0.001)
-                bike_my_bar2.progress(percent_complete + 1)
-    with col2:
-        def load_lottieurl(url):
-            r = requests.get(url)
-            if r.status_code != 200:
-                return None
-            else:
-                return r.json()
-        lottie_api = load_lottieurl('https://assets8.lottiefiles.com/packages/lf20_ztjvhpit.json')
-        st_lottie(lottie_api, height=500, key='api')
+    # Bike Page
+    if selected == 'Bike':
+        st.header('GET THE PRICE OF USED BIKE')
+        # Form to take data from user
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.form(key='form2'):
+                bike = st.selectbox('Bike Model', options=bikelist)
+                bike = dctbike[bike]
+                # location = st.text_input('Location')
+                city = st.selectbox('Location', options=citylist)
+                city = dctcity[city]
+                # year = st.text_input('Year')
+                bike_year = st.selectbox('Year', options=yearlist)
+                if bike_year == 'less than 2003':
+                    bike_year = 2002   
+                age = int(dt.date.today().year)-int(bike_year)                # Present year - selling year
+                # Km_driven by bike
+                km_driven_bike = st.text_input('Kms Driven (Enter accurate value for better results)')
+                # owner_type = st.text_input('Owner Type')
+                owner_type_bike = st.selectbox('Owner Type', options=ownerlistbike)
+                owner_type_bike = dctownerbike[owner_type_bike]
+                # brand of bike
+                bike_brand = st.selectbox('Brand', options=brandlist)
+                bike_brand = dctbrand[bike_brand]
+                # Power of bike (Horse Power)
+                bike_power = st.text_input('Power in bhp')
+                # power = int(power)
+                bike_price = st.text_input('Original Price')
 
 
+                # ---Submit Button---
+                submit_button2 = st.form_submit_button(label='Get Bike Price')
+                # if submit_button:
+                #     st.success('Thanks for using!')
 
 
-if selected == 'Contact':
-    st.header(':mailbox: Get In touch With Me!')
+                if submit_button2 and (km_driven_bike=="" or bike_power == "" or bike_price == ""):
+                    # st.success('Thanks for using!')
+                    st.warning('You have missed some fields to fill in!')
+                elif km_driven_bike=="" or bike_power == "" or bike_price == "":
+                    st.warning('Please fill out all the fields!')
+                else:
+                    st.success('Thanks for Filling!')
+                    # ---Calling the API---
+                    URL = 'https://tvs-price-predictor-bike.herokuapp.com/bike-predict'
 
-    # ---Contact Form---
-    contact_form = """
-    <form action="https://formsubmit.co/mnvsrinivas1@gmail.com" method="POST">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="text" name="name" placeholder="Your name" required>
-        <input type="email" name="email" placeholder="Your email" required>
-        <textarea name="message" placeholder="Your message here"></textarea>
-        <button type="submit">Send</button>
-    </form>
-    """
+                    # Best Condition Pred
+                    PARAMS = {
+                    "bike_name": bike,
+                    "city": city,
+                    "kms_driven": km_driven_bike,
+                    "owner": owner_type_bike,
+                    "age": age,
+                    "power": bike_power,
+                    "brand": bike_brand
+                    }
+                    # Good condition Pred
+                    PARAMS2 = {
+                    "bike_name": bike,
+                    "city": city,
+                    "kms_driven": km_driven_bike,
+                    "owner": owner_type_bike,
+                    "age": int(int(age)+3),
+                    "power": bike_power,
+                    "brand": bike_brand
+                    }
+                    # if submit_button:    
+                    #     response = requests.post(URL, json=PARAMS)
+                        # st.write(response.json()['prediction'])
 
-    st.markdown(contact_form, unsafe_allow_html=True)
 
-    # Use Local CSS File
-    def local_css(file_name):
-        with open(file_name) as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    local_css("style/style.css")
+            # ---Result---
+            if submit_button2 and not (km_driven_bike=="" or bike_power == "" or bike_price == ""):
+                # Wait transition
+                with st.spinner('Wait for it...'):
+                    bike_response = requests.post(URL, json=PARAMS)
+                    bike_response2 = requests.post(URL, json=PARAMS2)
+                # st.success('Done!')
+                # response = requests.post(URL, json=PARAMS)
+                # st.write(response.json()['prediction'])
 
-    st.subheader('Follow me on')
-    html = f"""<ul>
-            <li style="display:inline-block;">
-                <a href='{'https://www.linkedin.com/in/srinivas-menta-b96977214/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>
-            </li>
-            <li style="display:inline-block;">
-                <a href='{'https://github.com/Srinu2568'}'><img src='https://icones.pro/wp-content/uploads/2021/06/icone-github-bleu.png' width='25' height='25'></a>
-            </li>
-            <li style="display:inline-block;">
-                <a href='{'https://www.instagram.com/mnv_srinivas/'}'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/2048px-Instagram_icon.png' width='25' height='25'></a>
-            </li>
-            <li style="display:inline-block;">
-                <a href='{'https://medium.com/@mnvsrinivas1'}'><img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4tZSzY3tgMrgLEyJWY0fChWR-7gwDCHep0UEy_PE0sSiu_gUdXo6pM402iTW-jS4W0XY&usqp=CAU' width='25' height='25'></a>
-            </li>
-        </ul>"""
-    # html = f"<a href='{'https://www.linkedin.com/in/srinivas-menta-b96977214/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>"
-    st.markdown(html, unsafe_allow_html=True)
-    # 'https://png.pngtree.com/png-clipart/20180626/ourmid/pngtree-instagram-icon-instagram-logo-png-image_3584853.png'
+                # ---Progress bar---
+                # Original Price
+                bike_org_price = float(bike_price)
+                st.write('Original Price', bike_org_price)
+
+                # For Best Price
+                bike_resp_result = bike_response.json()['bike_price_prediction']
+                st.write('Best Price ', bike_resp_result)
+                my_bar_bike = st.progress(100) # set to original price
+
+                bike_perc_resp = int((bike_resp_result/bike_org_price)*100)
+                for percent_complete in range(bike_perc_resp):
+                    time.sleep(0.001)
+                    my_bar_bike.progress(percent_complete + 1)
+
+                # For Average Price
+                bike_resp_result2 = bike_response2.json()['bike_price_prediction']
+                st.write('Average Price ', bike_resp_result2)
+                bike_perc_resp2 = int((bike_resp_result2/bike_org_price)*100)
+                bike_my_bar2 = st.progress(100) # set to original price
+
+                for percent_complete in range(bike_perc_resp2):
+                    time.sleep(0.001)
+                    bike_my_bar2.progress(percent_complete + 1)
+        with col2:
+            def load_lottieurl(url):
+                r = requests.get(url)
+                if r.status_code != 200:
+                    return None
+                else:
+                    return r.json()
+            lottie_api = load_lottieurl('https://assets8.lottiefiles.com/packages/lf20_ztjvhpit.json')
+            st_lottie(lottie_api, height=500, key='api')
+
+    # Contact Page
+    if selected == 'Contact':
+        st.header(':mailbox: Get In touch With Me!')
+
+        # ---Contact Form---
+        contact_form = """
+        <form action="https://formsubmit.co/mnvsrinivas1@gmail.com" method="POST">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="text" name="name" placeholder="Your name" required>
+            <input type="email" name="email" placeholder="Your email" required>
+            <textarea name="message" placeholder="Your message here"></textarea>
+            <button type="submit">Send</button>
+        </form>
+        """
+
+        st.markdown(contact_form, unsafe_allow_html=True)
+
+        # Use Local CSS File
+        def local_css(file_name):
+            with open(file_name) as f:
+                st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+        local_css("style/style.css")
+
+        st.subheader('Follow me on')
+        html = f"""<ul>
+                <li style="display:inline-block;">
+                    <a href='{'https://www.linkedin.com/in/srinivas-menta-b96977214/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>
+                </li>
+                <li style="display:inline-block;">
+                    <a href='{'https://github.com/Srinu2568'}'><img src='https://icones.pro/wp-content/uploads/2021/06/icone-github-bleu.png' width='25' height='25'></a>
+                </li>
+                <li style="display:inline-block;">
+                    <a href='{'https://www.instagram.com/mnv_srinivas/'}'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/2048px-Instagram_icon.png' width='25' height='25'></a>
+                </li>
+                <li style="display:inline-block;">
+                    <a href='{'https://medium.com/@mnvsrinivas1'}'><img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4tZSzY3tgMrgLEyJWY0fChWR-7gwDCHep0UEy_PE0sSiu_gUdXo6pM402iTW-jS4W0XY&usqp=CAU' width='25' height='25'></a>
+                </li>
+            </ul>"""
+        # html = f"<a href='{'https://www.linkedin.com/in/srinivas-menta-b96977214/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>"
+        st.markdown(html, unsafe_allow_html=True)
+        # 'https://png.pngtree.com/png-clipart/20180626/ourmid/pngtree-instagram-icon-instagram-logo-png-image_3584853.png'
