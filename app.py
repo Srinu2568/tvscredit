@@ -80,7 +80,7 @@ if selected == 'Home':
 
 # Car Page
 if selected == 'Car':
-    st.header('SELL YOUR CAR AT THE BEST PRICE')
+    st.header('GET THE PRICE OF USED CAR')
     # Form to take data from user
     col1, col2 = st.columns(2)
     with col1:
