@@ -3,3 +3,4 @@ pandas==1.4.3
 requests==2.26.0
 streamlit==1.13.0
 streamlit_lottie==0.0.3
+streamlit_option_menu==0.3.2
