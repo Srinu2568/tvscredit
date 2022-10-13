@@ -1,6 +1,4 @@
 import streamlit as st
-import pickle
-from pathlib import Path
 import requests
 from streamlit_option_menu import option_menu
 from streamlit_lottie import st_lottie
@@ -8,6 +6,7 @@ import time
 import datetime as dt
 import streamlit_authenticator as stauth
 
+import database as db
 
 # ---data for selecting in the form---
 carlist = ('Maruti Wagon', 'Hyundai Creta', 'Honda Jazz', 'Maruti Ertiga', 'Audi A4', 'Nissan Micra', 'Toyota Innova', 'Volkswagen Vento', 'Tata Indica', 'Maruti Ciaz', 'Honda City', 'Maruti Swift', 'Land Rover', 'Mitsubishi Pajero', 'Honda Amaze', 'Renault Duster', 'Mercedes-Benz New', 'BMW 3', 'Audi A6', 'Hyundai i20', 'Maruti Alto', 'Toyota Corolla', 'Mahindra Ssangyong', 'Maruti Vitara', 'Mahindra KUV', 'Mercedes-Benz M-Class', 'Volkswagen Polo', 'Tata Nano', 'Hyundai Elantra', 'Hyundai Xcent', 'Hyundai Grand', 'Renault KWID', 'Hyundai i10', 'Maruti Zen', 'Ford Figo', 'Mahindra XUV500', 'Nissan Terrano', 'Honda Brio', 'Ford Fiesta', 'Hyundai Santro', 'Tata Zest', 'Maruti Ritz', 'BMW 5', 'Toyota Fortuner', 'Ford Ecosport', 'Hyundai Verna', 'Maruti Omni', 'Toyota Etios', 'Jaguar XF', 'Maruti Eeco', 'Honda Civic', 'Mercedes-Benz B', 'Mahindra Scorpio', 'Honda CR-V', 'Chevrolet Beat', 'Skoda Rapid', 'Mercedes-Benz S', 'Skoda Superb', 'Hyundai EON', 'BMW X5', 'Chevrolet Optra', 'Mercedes-Benz E-Class', 'Maruti Baleno', 'Skoda Laura', 'Skoda Fabia', 'Tata Indigo', 'Audi Q3', 'Skoda Octavia', 'Mini Cooper', 'Hyundai Santa', 'BMW X1', 'Hyundai Accent', 'Mercedes-Benz GLE', 'Maruti A-Star', 'BMW X3', 'Ford EcoSport', 'Audi Q7', 'Volkswagen Jetta', 'Mercedes-Benz GLA', 'Maruti Celerio', 'Honda Accord', 'Tata Manza', 'Chevrolet Spark', 'Maruti 800', 'Mercedes-Benz GL-Class', 'Mahindra Bolero', 'Audi Q5', 'Ford Endeavour', 'Maruti SX4', 'Toyota Camry', 'Honda Mobilio', 'Fiat Linea', 'Jeep Compass', 'Ford Ikon', 'Chevrolet Aveo', 'Mahindra Xylo', 'Nissan Sunny', 'Maruti Dzire', 'Chevrolet Cruze', 'Volkswagen Ameo', 'Mercedes-Benz CLA', 'Tata Tiago', 'BMW 7', 'Hyundai Getz', 'Hyundai Elite')
@@ -53,31 +52,29 @@ st.markdown(html, unsafe_allow_html=True)
 # ------------------------------------------------------------------------------
 # User Authentication
 
-names = ['Peter Parker', 'Srinu']
-usernames = ['pparker', 'srinu']
-# passwords = ['123', '456']
+users = db.fetch_all_users() # It will return a json containing key, name, password(hashed), isEval(boolean)
 
-# Hash the passwords
-passwords = stauth.Hasher(['123', '456']).generate()
+print(users)
+
+usernames = [user['key'] for user in users]
+names = [user['name'] for user in users]
+hashed_passwords = [user['password'] for user in users]
+isEval = [user['isEval'] for user in users]
 
 
 credentials = {"usernames":{}}
 
-for un, name, pw in zip(usernames, names, passwords):
+for un, name, pw in zip(usernames, names, hashed_passwords):
     user_dict = {"name":name,"password":pw}
     credentials["usernames"].update({un:user_dict})
 
-authenticator = stauth.Authenticate(credentials,'some_cookie_name','some_signature_key',cookie_expiry_days=30)
+authenticator = stauth.Authenticate(credentials,
+'some_cookie_name','some_signature_key',cookie_expiry_days=30)
+
 name, authentication_status, username = authenticator.login('Login', 'main')
     
 
-if authentication_status:
-    st.write(f'Welcome *{name}*')
-    st.title('Some content')
-elif authentication_status == False:
-    st.error('Username/password is incorrect')
-elif authentication_status == None:
-    st.warning('Please enter your username and password')
+
 
 # if authentication_status True
 if authentication_status:
@@ -414,3 +411,8 @@ if authentication_status:
         # html = f"<a href='{'https://www.linkedin.com/in/srinivas-menta-b96977214/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>"
         st.markdown(html, unsafe_allow_html=True)
         # 'https://png.pngtree.com/png-clipart/20180626/ourmid/pngtree-instagram-icon-instagram-logo-png-image_3584853.png'
+
+elif authentication_status == False:
+    st.error('Username/password is incorrect')
+elif authentication_status == None:
+    st.warning('Please enter your username and password')

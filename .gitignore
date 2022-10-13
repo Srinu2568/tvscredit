@@ -1,1 +1,4 @@
 kv_pairs.txt
+.env
+upload_to_database.py
+__pycache__
