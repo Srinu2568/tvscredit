@@ -2,3 +2,5 @@ kv_pairs.txt
 .env
 upload_to_database.py
 __pycache__
+test.py
+cat.jpeg

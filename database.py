@@ -16,7 +16,7 @@ db = deta.Base('user_db')
 
 def insert_user(username, name, password, isEval):
     """"Returns the user on a successful user creation, otherwise raises an error"""
-    return db.put({'key':username, 'name':name, 'password': password, 'isEval':isEval})
+    return db.put({'key':username, 'name':name, 'password': password, 'isEval':isEval, 'images':[]})
 
 # To insert the users in the database
 # insert_user('user', 'user1', 'abc123', False)
