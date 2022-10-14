@@ -93,7 +93,7 @@ name, authentication_status, username = authenticator.login('Login', 'main')
 
 
 # if authentication_status True
-if authentication_status and db.get_user(username)['isEval']:
+if authentication_status and not db.get_user(username)['isEval']:
     uploaded_files = st.file_uploader("Choose photos to upload", accept_multiple_files=True, type=['png', 'jpeg', 'jpg'])
     st.set_option('deprecation.showfileUploaderEncoding', False)
     submit_button = st.button(label='Upload Photos')
@@ -101,21 +101,12 @@ if authentication_status and db.get_user(username)['isEval']:
     # Save the file in local storage and delete later
     pic_names = []
     for uploaded_file in uploaded_files:
-        # print(type(uploaded_file))
-        # bytes_data = uploaded_file.read()
-        # im = base64.b64decode(bytes_data)
         file = uploaded_file.read()
         image_result = open(uploaded_file.name, 'wb') # create a writable image and write the decoding result
         image_result.write(file)
         st.write("filename:", uploaded_file.name)
         pic_names.append(uploaded_file.name)
         image_result.close()
-        
-    #     # saving the file
-    #     with open("catnew.jpeg", "wb+") as f:
-    #         for chunk in bytes_data.iter_chunks(4096):
-    #             f.write(chunk)
-    #         bytes_data.close()
            
     # If submit upload it to the cloud    
     if submit_button:
