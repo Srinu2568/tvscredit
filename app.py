@@ -283,7 +283,10 @@ if authentication_status and not db.get_user(username)['isEval']:
             "Power": power,
             "Original_Price": price,
             "Predicted_price": st.session_state['pred_price'],
-            "Type": 'car'
+            "Type": 'car',
+            'Feedback': '',
+            'Time_Stamp': time.time(),
+            'Evaluator_Id': None
             }
 
             st.write('---')
@@ -470,7 +473,10 @@ if authentication_status and not db.get_user(username)['isEval']:
             "Power": bike_power,
             "Original_Price": bike_price,
             "Predicted_price": st.session_state['bike_pred_price'],
-            "Type": 'bike'
+            "Type": 'bike',
+            "Feedback": '',
+            "Time_Stamp": time.time(),
+            "Evaluator_Id": None
             }
 
             st.write('---')
