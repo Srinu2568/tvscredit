@@ -299,6 +299,7 @@ if authentication_status and not db.get_user(username)['isEval']:
 
             # Save the file in local storage and delete later
             pic_names = []
+            pics = []
             for uploaded_file in uploaded_files:
                 file = uploaded_file.read()
                 image_result = open(uploaded_file.name, 'wb') # create a writable image and write the decoding result
@@ -315,20 +316,27 @@ if authentication_status and not db.get_user(username)['isEval']:
                         name = 'car-'+ form_data['Car'] + '-' +unique_id + '-' + uploaded_file.name # car was added infront of string to seperate it from bikes
                         path_file = path='./'+pic_names[i]
                         drive.put(name, path=path)
-                        # Get the data of current user
-                        user_data = db.get_user(username)
-                        pics = user_data['images']
+                        os.remove(pic_names[i]) # Removes the files in local storage
                         pics.append(name)
-                        forms = user_data['form_data']
-                        if form_data not in forms:
-                            forms.append(form_data)
-                        car_list = user_data['type_data']
-                        if 'car' not in car_list:
-                            car_list = list(car_list)
-                            car_list.append('car')
-                        # Update the user's images with uploaded images
-                        db.update_user(username, updates={'images':pics, 'type_data':car_list, 'form_data':forms})
-                        os.remove(pic_names[i])
+                    # Get the data of current user
+                    user_data = db.get_user(username)
+                    res_pics = user_data['images']
+                    pics = pics + res_pics
+                    forms = user_data['form_data']
+                    mod_forms = []
+                    # Creating a dictionary by removing Time_Stamp from db_form and recieved_form
+                    for form in forms:
+                        res = {k:v for k, v in zip(form.keys(), form.keys()) if k!='Time_Stamp' and k!='Bike'}
+                        mod_forms.append(res)
+                    mod_form_data = {k:v for k, v in zip(form_data.keys(), form_data.keys()) if k!= 'Time_Stamp' and k!='Bike'}
+                    if mod_form_data not in mod_forms:
+                        forms.append(form_data)
+                    car_list = user_data['type_data']
+                    if 'car' not in car_list:
+                        car_list = list(car_list)
+                        car_list.append('car')
+                    # Update the user's images with uploaded images
+                    db.update_user(username, updates={'images':pics, 'type_data':car_list, 'form_data':forms})
                     st.success('Thanks for uploading!')
 
 
