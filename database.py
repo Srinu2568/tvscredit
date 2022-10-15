@@ -14,9 +14,9 @@ deta = Deta(DETA_KEY)
 # This is how to create/connect a database
 db = deta.Base('user_db')
 
-def insert_user(username, name, password, isEval=False, form_data=[], type_data=[]):
+def insert_user(username, name, password, isEval=False, form_data=[], type_data=[], isEvaluated = False):
     """"Returns the user on a successful user creation, otherwise raises an error"""
-    return db.put({'key':username, 'name':name, 'password': password, 'isEval':isEval, 'images':[], 'form_data':form_data, 'type_data':type_data})
+    return db.put({'key':username, 'name':name, 'password': password, 'isEval':isEval, 'images':[], 'form_data':form_data, 'type_data':type_data, 'isEvaluated': isEvaluated})
 
 # To insert the users in the database
 # insert_user('user', 'user1', 'abc123', False)

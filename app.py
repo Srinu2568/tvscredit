@@ -225,7 +225,9 @@ if authentication_status and not db.get_user(username)['isEval']:
                     #     response = requests.post(URL, json=PARAMS)
                         # st.write(response.json()['prediction'])
 
-            pred_price = 0
+            # # Storing the predicted price in a session state
+            # if 'pred_price' not in st.session_state:
+            #     st.session_state['pred_price'] = 0
             # ---Result---
             if submit_button and not (km_driven=="" or power == "" or price == ""):
                 # Wait transition
@@ -246,7 +248,7 @@ if authentication_status and not db.get_user(username)['isEval']:
                 st.write('Best Price ', resp_result)
                 my_bar = st.progress(100) # set to original price
 
-                pred_price = resp_result
+
 
                 perc_resp = int((resp_result/org_price)*100)
                 for percent_complete in range(perc_resp):
@@ -263,6 +265,13 @@ if authentication_status and not db.get_user(username)['isEval']:
                     time.sleep(0.001)
                     my_bar2.progress(percent_complete + 1)
 
+                # Storing the predicted price in a session state
+                if 'pred_price' not in st.session_state:
+                    st.session_state['pred_price'] = 0
+                st.session_state['pred_price'] = resp_result
+            # Handling session state
+            if 'pred_price' not in st.session_state:
+                st.session_state['pred_price'] = 0
             # Json for DB
             form_data = {
             "Car": car_data,
@@ -273,7 +282,7 @@ if authentication_status and not db.get_user(username)['isEval']:
             "Fuel_Type": fuel_type_data,
             "Power": power,
             "Original_Price": price,
-            "Predicted_price": pred_price,
+            "Predicted_price": st.session_state['pred_price'],
             "Type": 'car'
             }
 
@@ -291,32 +300,33 @@ if authentication_status and not db.get_user(username)['isEval']:
                 file = uploaded_file.read()
                 image_result = open(uploaded_file.name, 'wb') # create a writable image and write the decoding result
                 image_result.write(file) # And finally save to current path -> './'
-                st.write("filename:", uploaded_file.name)
+                # st.write("filename:", uploaded_file.name)
                 pic_names.append(uploaded_file.name)
                 image_result.close()
                 
             # If submit upload it to the cloud    
             if submit_button_photos:
-                for i in range(len(pic_names)):
-                    unique_id = str(uuid.uuid4())
-                    name = 'car-'+ form_data['Car'] + '-' +unique_id + '-' + uploaded_file.name # car was added infront of string to seperate it from bikes
-                    path_file = path='./'+pic_names[i]
-                    drive.put(name, path=path)
-                    # Get the data of current user
-                    user_data = db.get_user(username)
-                    pics = user_data['images']
-                    pics.append(name)
-                    forms = user_data['form_data']
-                    if form_data not in forms:
-                        forms.append(form_data)
-                    car_list = user_data['type_data']
-                    if 'car' not in car_list:
-                        car_list = list(car_list)
-                        car_list.append('car')
-                    # Update the user's images with uploaded images
-                    db.update_user(username, updates={'images':pics, 'type_data':car_list, 'form_data':forms})
-                    os.remove(pic_names[i])
-                st.success('Thanks for uploading!')
+                with st.spinner('Uploading....'):
+                    for i in range(len(pic_names)):
+                        unique_id = str(uuid.uuid4())
+                        name = 'car-'+ form_data['Car'] + '-' +unique_id + '-' + uploaded_file.name # car was added infront of string to seperate it from bikes
+                        path_file = path='./'+pic_names[i]
+                        drive.put(name, path=path)
+                        # Get the data of current user
+                        user_data = db.get_user(username)
+                        pics = user_data['images']
+                        pics.append(name)
+                        forms = user_data['form_data']
+                        if form_data not in forms:
+                            forms.append(form_data)
+                        car_list = user_data['type_data']
+                        if 'car' not in car_list:
+                            car_list = list(car_list)
+                            car_list.append('car')
+                        # Update the user's images with uploaded images
+                        db.update_user(username, updates={'images':pics, 'type_data':car_list, 'form_data':forms})
+                        os.remove(pic_names[i])
+                    st.success('Thanks for uploading!')
 
 
         with col2:
@@ -337,22 +347,26 @@ if authentication_status and not db.get_user(username)['isEval']:
         with col1:
             with st.form(key='form2'):
                 bike = st.selectbox('Bike Model', options=bikelist)
+                bike_data = bike # To store in the database
                 bike = dctbike[bike]
                 # location = st.text_input('Location')
                 city = st.selectbox('Location', options=citylist)
+                city_data = city
                 city = dctcity[city]
                 # year = st.text_input('Year')
                 bike_year = st.selectbox('Year', options=yearlist)
                 if bike_year == 'less than 2003':
-                    bike_year = 2002   
+                    bike_year = 2002
                 age = int(dt.date.today().year)-int(bike_year)                # Present year - selling year
                 # Km_driven by bike
                 km_driven_bike = st.text_input('Kms Driven (Enter accurate value for better results)')
                 # owner_type = st.text_input('Owner Type')
                 owner_type_bike = st.selectbox('Owner Type', options=ownerlistbike)
+                owner_type_bike_data = owner_type_bike
                 owner_type_bike = dctownerbike[owner_type_bike]
                 # brand of bike
                 bike_brand = st.selectbox('Brand', options=brandlist)
+                bike_brand_data = bike_brand
                 bike_brand = dctbrand[bike_brand]
                 # Power of bike (Horse Power)
                 bike_power = st.text_input('Power in bhp')
@@ -402,6 +416,7 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 
             # ---Result---
+            pred_price_bike = 0
             if submit_button2 and not (km_driven_bike=="" or bike_power == "" or bike_price == ""):
                 # Wait transition
                 with st.spinner('Wait for it...'):
@@ -418,6 +433,7 @@ if authentication_status and not db.get_user(username)['isEval']:
 
                 # For Best Price
                 bike_resp_result = bike_response.json()['bike_price_prediction']
+                bike_pred_price = bike_resp_result
                 st.write('Best Price ', bike_resp_result)
                 my_bar_bike = st.progress(100) # set to original price
 
@@ -436,8 +452,29 @@ if authentication_status and not db.get_user(username)['isEval']:
                     time.sleep(0.001)
                     bike_my_bar2.progress(percent_complete + 1)
 
+                # Storing the predicted price in a session state
+                if 'bike_pred_price' not in st.session_state:
+                    st.session_state['bike_pred_price'] = 0
+                st.session_state['bike_pred_price'] = bike_resp_result
+            # Handling session state
+            if 'bike_pred_price' not in st.session_state:
+                st.session_state['bike_pred_price'] = 0        
+            # Json for DB
+            bike_form_data = {
+            "Bike": bike_data,
+            "City": city_data,
+            "Year": bike_year,
+            "Kilometers_Driven": km_driven_bike,
+            "Owner_Type": owner_type_bike_data,
+            "Bike_Brand": bike_brand_data,
+            "Power": bike_power,
+            "Original_Price": bike_price,
+            "Predicted_price": st.session_state['bike_pred_price'],
+            "Type": 'bike'
+            }
+
             st.write('---')
-            st.write('For vehicle Inspection and Final Valuation Please Upload the Images of Your Car')
+            st.write('For vehicle Inspection and Final Valuation Please Upload the Images of Your Bike')
             # Image upload
             uploaded_files = st.file_uploader("Choose photos to upload", accept_multiple_files=True, type=['png', 'jpeg', 'jpg'])
             st.set_option('deprecation.showfileUploaderEncoding', False) # file encoding deprecated set to false
@@ -450,25 +487,33 @@ if authentication_status and not db.get_user(username)['isEval']:
                 file = uploaded_file.read()
                 image_result = open(uploaded_file.name, 'wb') # create a writable image and write the decoding result
                 image_result.write(file) # And finally save to current path -> './'
-                st.write("filename:", uploaded_file.name)
+                # st.write("filename:", uploaded_file.name)
                 pic_names.append(uploaded_file.name)
                 image_result.close()
                 
             # If submit upload it to the cloud    
             if submit_button_photos:
-                for i in range(len(pic_names)):
-                    unique_id = str(uuid.uuid4())
-                    name = unique_id + '-' + uploaded_file.name
-                    path_file = path='./'+pic_names[i]
-                    drive.put(name, path=path)
-                    # Get the data of current user
-                    user_data = db.get_user(username)
-                    pics = user_data['images']
-                    # Update the user's images with uploaded images
-                    pics.append(name)
-                    db.update_user(username, updates={'images':pics, 'type':'bike', 'form_data':form_data})
-                    os.remove(pic_names[i])
-                st.success('Thanks for uploading!')
+                with st.spinner('Uploading....'):
+                    for i in range(len(pic_names)):
+                        unique_id = str(uuid.uuid4())
+                        name = 'bike-'+ bike_form_data['Bike'] + '-' +unique_id + '-' + uploaded_file.name # car was added infront of string to seperate it from bikes
+                        path_file = path='./'+pic_names[i]
+                        drive.put(name, path=path)
+                        # Get the data of current user
+                        user_data = db.get_user(username)
+                        pics = user_data['images']
+                        pics.append(name)
+                        forms = user_data['form_data']
+                        if bike_form_data not in forms:
+                            forms.append(bike_form_data)
+                        bike_list = user_data['type_data']
+                        if 'bike' not in bike_list:
+                            bike_list = list(bike_list)
+                            bike_list.append('bike')
+                        # Update the user's images with uploaded images
+                        db.update_user(username, updates={'images':pics, 'type_data':bike_list, 'form_data':forms})
+                        os.remove(pic_names[i])
+                    st.success('Thanks for uploading!')
 
         with col2:
             def load_lottieurl(url):
