@@ -1,4 +1,3 @@
-from pyparsing import Or
 import streamlit as st
 import requests
 import os
@@ -10,7 +9,6 @@ from streamlit_lottie import st_lottie
 import time
 import datetime as dt
 import streamlit_authenticator as stauth
-import base64
 import database as db
 
 load_dotenv('.env')
@@ -105,12 +103,6 @@ if authentication_status and not db.get_user(username)['isEval']:
         )
         # Logout
         authenticator.logout('Logout', 'main')
-        if authentication_status:
-            try:
-                if authenticator.reset_password(username, 'Reset password'):
-                    st.success('Password modified successfully')
-            except Exception as e:
-                st.error(e)
 
 
 
