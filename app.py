@@ -91,7 +91,7 @@ name, authentication_status, username = authenticator.login('Login', 'main')
 
 
 
-# if authentication_status True and user is evaluator
+# if authentication_status True and user is not evaluator
 if authentication_status and not db.get_user(username)['isEval']:
     # Sidebar
     with st.sidebar:
@@ -582,6 +582,9 @@ if authentication_status and not db.get_user(username)['isEval']:
         st.markdown(html, unsafe_allow_html=True)
         # 'https://png.pngtree.com/png-clipart/20180626/ourmid/pngtree-instagram-icon-instagram-logo-png-image_3584853.png'
 
+# if auth status is true and user in evaluator
+if authentication_status and db.get_user(username)['isEval']:
+    st.write('Hello Evaluator')
 
 # Auth edge cases
 elif authentication_status == False:
