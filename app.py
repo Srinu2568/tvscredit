@@ -1,3 +1,4 @@
+from pyparsing import Or
 import streamlit as st
 import requests
 import os
@@ -326,9 +327,9 @@ if authentication_status and not db.get_user(username)['isEval']:
                     mod_forms = []
                     # Creating a dictionary by removing Time_Stamp from db_form and recieved_form
                     for form in forms:
-                        res = {k:v for k, v in zip(form.keys(), form.keys()) if k!='Time_Stamp' and k!='Bike'}
+                        res = {k:v for k, v in zip(form.keys(), form.values()) if k!='Time_Stamp' and k!='Bike' and k!='Feedback' and k!='Type'}
                         mod_forms.append(res)
-                    mod_form_data = {k:v for k, v in zip(form_data.keys(), form_data.keys()) if k!= 'Time_Stamp' and k!='Bike'}
+                    mod_form_data = {k:v for k, v in zip(form_data.keys(), form_data.values()) if k!= 'Time_Stamp' and k!='Bike' and k!='Feedback' and k!='Type'}
                     if mod_form_data not in mod_forms:
                         forms.append(form_data)
                     car_list = user_data['type_data']
@@ -492,11 +493,12 @@ if authentication_status and not db.get_user(username)['isEval']:
             # Image upload
             uploaded_files = st.file_uploader("Choose photos to upload", accept_multiple_files=True, type=['png', 'jpeg', 'jpg'])
             st.set_option('deprecation.showfileUploaderEncoding', False) # file encoding deprecated set to false
-            submit_button_photos = st.button(label='Upload Photos')
+            submit_button_photos_bike = st.button(label='Upload Photos')
 
 
             # Save the file in local storage and delete later
             pic_names = []
+            bike_pics = []
             for uploaded_file in uploaded_files:
                 file = uploaded_file.read()
                 image_result = open(uploaded_file.name, 'wb') # create a writable image and write the decoding result
@@ -506,27 +508,34 @@ if authentication_status and not db.get_user(username)['isEval']:
                 image_result.close()
                 
             # If submit upload it to the cloud    
-            if submit_button_photos:
+            if submit_button_photos_bike:
                 with st.spinner('Uploading....'):
                     for i in range(len(pic_names)):
                         unique_id = str(uuid.uuid4())
                         name = 'bike-'+ bike_form_data['Bike'] + '-' +unique_id + '-' + uploaded_file.name # car was added infront of string to seperate it from bikes
                         path_file = path='./'+pic_names[i]
                         drive.put(name, path=path)
-                        # Get the data of current user
-                        user_data = db.get_user(username)
-                        pics = user_data['images']
-                        pics.append(name)
-                        forms = user_data['form_data']
-                        if bike_form_data not in forms:
-                            forms.append(bike_form_data)
-                        bike_list = user_data['type_data']
-                        if 'bike' not in bike_list:
-                            bike_list = list(bike_list)
-                            bike_list.append('bike')
-                        # Update the user's images with uploaded images
-                        db.update_user(username, updates={'images':pics, 'type_data':bike_list, 'form_data':forms})
-                        os.remove(pic_names[i])
+                        os.remove(pic_names[i]) # Removes the files in local storage
+                        bike_pics.append(name)
+                    # Get the data of current user
+                    user_data = db.get_user(username)
+                    bike_res_pics = user_data['images']
+                    bike_pics = bike_pics + bike_res_pics
+                    forms = user_data['form_data']
+                    mod_forms = []
+                    # Creating a dictionary by removing Time_Stamp from db_form and recieved_form
+                    for form in forms:
+                        res = {k:v for k, v in zip(form.keys(), form.values()) if k!='Time_Stamp' and k!='Car' and k!='Feedback' and k!='Type'}
+                        mod_forms.append(res)
+                    mod_form_data = {k:v for k, v in zip(bike_form_data.keys(), bike_form_data.values()) if k!= 'Time_Stamp' and k!='Car' and k!='Feedback' and k!='Type'}
+                    if mod_form_data not in mod_forms:
+                        forms.append(bike_form_data)
+                    bike_list = user_data['type_data']
+                    if 'bike' not in bike_list:
+                        bike_list = list(bike_list)
+                        bike_list.append('bike')
+                    # Update the user's images with uploaded images
+                    db.update_user(username, updates={'images':bike_pics, 'type_data':bike_list, 'form_data':forms})
                     st.success('Thanks for uploading!')
 
         with col2:
