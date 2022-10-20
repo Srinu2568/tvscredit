@@ -7,4 +7,4 @@ streamlit_lottie==0.0.3
 streamlit_option_menu==0.3.2
 numpy==1.23.2
 pandas==1.4.3
-requests==2.26.0
+opencv_python==4.6.0.66
