@@ -1,4 +1,6 @@
 import streamlit as st
+import cv2
+import numpy as np
 import requests
 import os
 import uuid
@@ -78,6 +80,7 @@ isEval = [user['isEval'] for user in users]
 
 
 credentials = {"usernames":{}}
+
 
 for un, name, pw in zip(usernames, names, hashed_passwords):
     user_dict = {"name":name,"password":pw}
@@ -585,6 +588,22 @@ if authentication_status and not db.get_user(username)['isEval']:
 # if auth status is true and user in evaluator
 if authentication_status and db.get_user(username)['isEval']:
     st.write('Hello Evaluator')
+    test_user = db.get_user('test_user')
+    res_image = test_user['images'][0]
+    res_image2 = test_user['images'][1]
+    arr_im = [res_image, res_image2]
+    im = drive.get(res_image)
+    im2 = drive.get(res_image2)
+    # st.image(im)
+    file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8)
+    opencv_image = cv2.imdecode(file_bytes, 1)
+    file_bytes = np.asarray(bytearray(im2.read()), dtype=np.uint8)
+    opencv_image2 = cv2.imdecode(file_bytes, 1)
+    arr = [opencv_image, opencv_image2]
+    st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+
+
+
 
 # Auth edge cases
 elif authentication_status == False:
