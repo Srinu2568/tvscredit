@@ -12,6 +12,7 @@ import time
 import datetime as dt
 import streamlit_authenticator as stauth
 import database as db
+import base64
 
 load_dotenv('.env')
 
@@ -593,17 +594,18 @@ if authentication_status and db.get_user(username)['isEval']:
     res_image2 = test_user['images'][1]
     arr_im = [res_image, res_image2]
     im = drive.get(res_image)
+    contents = im.read()
+    data_url = base64.b64encode(contents).decode("utf-8")    
     im2 = drive.get(res_image2)
     # st.image(im)
-    file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8)
-    opencv_image = cv2.imdecode(file_bytes, 1)
-    file_bytes = np.asarray(bytearray(im2.read()), dtype=np.uint8)
-    opencv_image2 = cv2.imdecode(file_bytes, 1)
-    arr = [opencv_image, opencv_image2]
-    st.image(arr, channels = 'BGR', output_format='PNG', width=150)
-
-
-
+    # file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8)
+    # opencv_image = cv2.imdecode(file_bytes, 1)
+    # file_bytes2 = np.asarray(bytearray(im2.read()), dtype=np.uint8)
+    # opencv_image2 = cv2.imdecode(file_bytes2, 1)
+    # arr = [opencv_image, opencv_image2]
+    # st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+    st.markdown(f'<image src = "data:image/jpeg;base64, {data_url}" alt = "bike.jpg">', 
+    unsafe_allow_html=True)
 
 # Auth edge cases
 elif authentication_status == False:
