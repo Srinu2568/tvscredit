@@ -1,3 +1,4 @@
+from click import option
 import streamlit as st
 import cv2
 import numpy as np
@@ -12,6 +13,7 @@ import time
 import datetime as dt
 import streamlit_authenticator as stauth
 import database as db
+from datetime import datetime
 
 load_dotenv('.env')
 
@@ -282,7 +284,9 @@ if authentication_status and not db.get_user(username)['isEval']:
             "Type": 'car',
             'Feedback': '',
             'Time_Stamp': time.time(),
-            'Evaluator_Id': None
+            'Evaluator_Id': None,
+            'isEvaluated': False,
+            'Eval_Price': 0
             }
 
             st.write('---')
@@ -480,7 +484,9 @@ if authentication_status and not db.get_user(username)['isEval']:
             "Type": 'bike',
             "Feedback": '',
             "Time_Stamp": time.time(),
-            "Evaluator_Id": None
+            "Evaluator_Id": None,
+            "isEvaluated": False,
+            "Eval_Price": 0
             }
 
             st.write('---')
@@ -587,19 +593,109 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 # if auth status is true and user in evaluator
 if authentication_status and db.get_user(username)['isEval']:
-    st.write('Hello Evaluator')
-    test_user = db.get_user('test_user') # Getting user details
-    res_image = test_user['images'][0] # Getting image name from deta drive
-    res_image2 = test_user['images'][1]
-    arr_im = [res_image, res_image2]
-    im = drive.get(res_image)
-    im2 = drive.get(res_image2)
-    file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8) # Converting image(deta object) to bytearray using numpy
-    opencv_image = cv2.imdecode(file_bytes, 1) # Decoding the bytearray to image(Byte stream)
-    file_bytes2 = np.asarray(bytearray(im2.read()), dtype=np.uint8)
-    opencv_image2 = cv2.imdecode(file_bytes2, 1)
-    arr = [opencv_image, opencv_image2]
-    st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+    with st.sidebar:
+        selected = option_menu(
+            menu_title = 'Menu',
+            options = ['Home', 'Car', 'Bike', 'Contact'],
+            icons = ['house', '', 'bicycle', 'envelope'],
+            menu_icon = 'cast',
+        )
+        # Logout
+        authenticator.logout('Logout', 'main')
+
+    # Home
+    if selected == 'Home':
+        st.write('Hello Evaluator')
+        test_user = db.get_user('test_user') # Getting user details
+        res_image = test_user['images'][0] # Getting image name from deta drive
+        res_image2 = test_user['images'][1]
+        arr_im = [res_image, res_image2]
+        im = drive.get(res_image)
+        im2 = drive.get(res_image2)
+        file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8) # Converting image(deta object) to bytearray using numpy
+        opencv_image = cv2.imdecode(file_bytes, 1) # Decoding the bytearray to image(Byte stream)
+        file_bytes2 = np.asarray(bytearray(im2.read()), dtype=np.uint8)
+        opencv_image2 = cv2.imdecode(file_bytes2, 1)
+        arr = [opencv_image, opencv_image2]
+        st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+    
+    # Car
+    car_form = {}
+    val = []
+    cars = []
+    usercars = []
+    if selected == 'Car':
+        left, mid, right = st.columns(3)
+        with mid:
+            st.header('EVALUATOR DASHBOARD')
+        st.write('SELECT VEHICLE TO EVALUATE')
+        users = db.fetch_all_users()
+        usecase = {user['name']:user['key'] for user in users}
+        car_users = [user for user in users if 'car' in user['type_data'] and not user['isEval']]
+        data = [{l['name']:(l['form_data'], l['images'])} for l in car_users]
+        car_usernames = [list(x.keys())[0] for x in data]
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.form(key='form1'):
+                car_user = st.selectbox('Users',options=car_usernames)
+                car_user_button = st.form_submit_button(label='Select User')
+            if car_user_button:
+                if 'car_user_button' not in st.session_state:
+                    st.session_state['car_user_button'] = True
+                for i in data:
+                    if list(i.keys())[0] == car_user:
+                        val = i[car_user][0]
+                for i in val:
+                    if i['Type'] == 'car' and not i['isEvaluated']:
+                        cars.append(i['Car'])
+
+                for i in val:
+                    if i['Type'] == 'car' and not i['isEvaluated']:
+                        usercars.append(i)
+                
+                        
+        #######################################
+                for i in usercars:
+                    st.write(f'Car : {i["Car"]}')
+                    st.write(f'Fuel Type : {i["Fuel_Type"]}')
+                    st.write(f'Kilometers Driven : {i["Kilometers_Driven"]}')
+                    st.write(f'Location : {i["Location"]}')
+                    st.write(f'Original Price : {i["Original_Price"]}')
+                    st.write(f'Owner Type : {i["Owner_Type"]}')
+                    st.write(f'Power : {i["Power"]}')
+                    st.write(f'Predicted Price : {i["Predicted_price"]}')
+                    st.write(f'Date of Request : {datetime.fromtimestamp(i["Time_Stamp"]).date()}')
+                    st.write(f'Year : {i["Year"]}')
+                    # Image display
+                    desired_user = usecase[car_user]
+                    test_user = db.get_user(desired_user) # Getting user details
+                    user_res = db.get_user(desired_user) # Getting cur user details
+                    user_images = user_res['images'] # Getting the name of images from user_db
+                    res_image = test_user['images'] # Getting image name from deta drive
+                    arr2 = []
+                    for j in range(len(user_images)):
+                        str_manip = f'car-{i["Car"]}-'
+                        if user_images[j].startswith(str_manip):
+                            arr2.append(user_images[j])
+                    arr = []
+                    for k in range(len(arr2)):
+                        im = drive.get(arr2[k])
+                        file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8) # Converting image(deta object) to bytearray using numpy
+                        opencv_image = cv2.imdecode(file_bytes, 1) # Decoding the bytearray to image(Byte stream)
+                        arr.append(opencv_image)
+                    st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+                        
+                    # im = drive.get(res_image)
+                    # im2 = drive.get(res_image2)
+                    # file_bytes2 = np.asarray(bytearray(im2.read()), dtype=np.uint8)
+                    # opencv_image2 = cv2.imdecode(file_bytes2, 1)
+                    # arr = [opencv_image, opencv_image2]
+                    # st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+
+
+        
+        
+
 
 
 # Auth edge cases
