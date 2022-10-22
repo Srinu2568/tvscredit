@@ -1,4 +1,6 @@
 from multiprocessing import allow_connection_pickling
+from typing import final
+from cv2 import findEssentialMat
 import streamlit as st
 import cv2
 import numpy as np
@@ -595,8 +597,14 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 # if auth status is true and user in evaluator
 if authentication_status and db.get_user(username)['isEval']:
-    if 'srinu' not in st.session_state:
-        st.session_state.srinu = []
+    if 'usercars' not in st.session_state:
+        st.session_state.usercars = []
+    if 'desired_user' not in st.session_state:
+        st.session_state.desired_user = None
+    if 'i' not in st.session_state:
+        st.session_state.i = {}
+    if 'val' not in st.session_state:
+        st.session_state.val = []
     with st.sidebar:
         selected = option_menu(
             menu_title = 'Menu',
@@ -671,6 +679,7 @@ if authentication_status and db.get_user(username)['isEval']:
     val = []
     cars = []
     usercars = []
+    needed_data = []
     if selected == 'Car':
         left, mid, right = st.columns(3)
         with mid:
@@ -692,6 +701,7 @@ if authentication_status and db.get_user(username)['isEval']:
                 for i in data:
                     if list(i.keys())[0] == car_user:
                         val = i[car_user][0]
+                st.session_state.val = val # Saving for later - eval feedback
                 for i in val:
                     if i['Type'] == 'car' and not i['isEvaluated']:
                         cars.append(i['Car'])
@@ -699,12 +709,23 @@ if authentication_status and db.get_user(username)['isEval']:
                 for i in val:
                     if i['Type'] == 'car' and not i['isEvaluated']:
                         usercars.append(i)
+                    
+                
+                # print(val)
+                # for i in val:
+                #     if i['Type'] == 'bike' or not i['isEvaluated']:
+                #         needed_data.append(i)
                 
                         
         #######################################
-                st.session_state.srinu = usercars
+                st.session_state.usercars = usercars # Used later for eval feedback form
                 if len(usercars) != 0:
-                    i = usercars[0]
+                    i = usercars[0] # Selecting the first form in the form data(which is the first uploaded one)
+                    try:
+                        st.session_state.val.remove(i)
+                    except:
+                        pass
+                    st.session_state.i = i
                     st.write(f'Car : {i["Car"]}')
                     st.write(f'Fuel Type : {i["Fuel_Type"]}')
                     st.write(f'Kilometers Driven : {i["Kilometers_Driven"]}')
@@ -717,6 +738,7 @@ if authentication_status and db.get_user(username)['isEval']:
                     st.write(f'Year : {i["Year"]}')
                     # Image display
                     desired_user = usecase[car_user]
+                    st.session_state.desired_user = desired_user # Saving for later
                     test_user = db.get_user(desired_user) # Getting user details
                     user_res = db.get_user(desired_user) # Getting cur user details
                     user_images = user_res['images'] # Getting the name of images from user_db
@@ -799,16 +821,39 @@ if authentication_status and db.get_user(username)['isEval']:
 
                     
                 # Evaluator feedback form
-            st.write("This is feedback form of evaluator")
-            with st.form(key='feed_form'):
+            st.header("This is feedback form of evaluator")
+            with st.form(key='feed_form', clear_on_submit=True):
                 feedback = st.text_input('Give feedback to the vehicle')
                 evaluated_price = st.text_input('Evaluated Price')
                 submit_button_feedback = st.form_submit_button(label='Submit Feedback')
-                st.write(feedback)
-                st.write(evaluated_price)
-                st.write(username)
-                st.write(st.session_state.srinu)
-
+                # alternate way
+                # if 'submit_button_feedback' not in st.session_state:
+                #     st.session_state.feedback = submit_button_feedback
+                if submit_button_feedback and not evaluated_price == "" and not feedback == "":
+                    # final form -> get the old form and modify it
+                    final_form = st.session_state.i
+                    # final_usercars -> form data which contains all the user forms in an array
+                    final_usercars = st.session_state.usercars
+                    new_form_data = {
+                    "Car": final_form['Car'],
+                    "Eval_Price": evaluated_price,
+                    "Evaluator_Id": username,
+                    "Feedback": feedback,
+                    "Fuel_Type": final_form['Fuel_Type'],
+                    "Kilometers_Driven": final_form['Kilometers_Driven'],
+                    "Location": final_form['Location'],
+                    "Original_Price": final_form['Original_Price'],
+                    "Owner_Type": final_form['Owner_Type'],
+                    "Power": final_form['Power'],
+                    "Predicted_price": final_form['Predicted_price'],
+                    "Time_Stamp": final_form['Time_Stamp'],
+                    "Type": final_form['Type'],
+                    "Year": final_form['Year'],
+                    "isEvaluated": True
+                    }
+                    st.session_state.val.append(new_form_data) # Appending the updated form data to the end
+                    db.update_user(st.session_state.desired_user, updates={'form_data':st.session_state.val})
+                    st.success("Feedback submitted!")
 
         
         
