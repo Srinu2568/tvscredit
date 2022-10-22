@@ -595,6 +595,8 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 # if auth status is true and user in evaluator
 if authentication_status and db.get_user(username)['isEval']:
+    if 'srinu' not in st.session_state:
+        st.session_state.srinu = []
     with st.sidebar:
         selected = option_menu(
             menu_title = 'Menu',
@@ -700,6 +702,7 @@ if authentication_status and db.get_user(username)['isEval']:
                 
                         
         #######################################
+                st.session_state.srinu = usercars
                 if len(usercars) != 0:
                     i = usercars[0]
                     st.write(f'Car : {i["Car"]}')
@@ -730,11 +733,11 @@ if authentication_status and db.get_user(username)['isEval']:
                             im = drive.get(arr2[k])
                             contents = im.read()
                             data_url = base64.b64encode(contents).decode('utf-8')
-                            if k == 0:
+                            if k == 0:  # If the image item is first one keep the first slide to active
                                 des_str = f""" <div class="carousel-item active">
                                 <img class="d-block w-100" src="data:image/png;base64, {data_url}" alt="First slide">
                                 </div> """
-                            elif k != 0:
+                            elif k != 0:  # If the image item is not first one keep the -- keep the remaining slides without active tag
                                 des_str = f""" <div class="carousel-item">
                                 <img class="d-block w-100" src="data:image/png;base64, {data_url}" alt="First slide">
                                 </div> """
@@ -742,13 +745,18 @@ if authentication_status and db.get_user(username)['isEval']:
 
 
 
-                        #########################################################################################    
+                        ######################################################################################### 
+                        # Import bootstrap cdn to html  
                         mark1 = """ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
                                     <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
                                 <style>
                                     .carousel {{
                                     width:640px;
                                     height:360px;
+                                    }}
+                                    image{{
+                                        height:640px;
+                                        width:360px;
                                     }}
                                 </style>
                                 <div class="carousel-inner"> """
@@ -783,10 +791,23 @@ if authentication_status and db.get_user(username)['isEval']:
                         # arr = [opencv_image, opencv_image2]
                         # st.image(arr, channels = 'BGR', output_format='PNG', width=150)
                     
-                    else:
+                    else: # if no pics
                         st.warning("User have not uploaded any images")
-                else:
+                    
+                else: # If no cars to evaluate
                     st.warning("No cars to evaluate for the selected user")
+
+                    
+                # Evaluator feedback form
+            st.write("This is feedback form of evaluator")
+            with st.form(key='feed_form'):
+                feedback = st.text_input('Give feedback to the vehicle')
+                evaluated_price = st.text_input('Evaluated Price')
+                submit_button_feedback = st.form_submit_button(label='Submit Feedback')
+                st.write(feedback)
+                st.write(evaluated_price)
+                st.write(username)
+                st.write(st.session_state.srinu)
 
 
         
