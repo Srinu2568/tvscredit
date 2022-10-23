@@ -620,8 +620,8 @@ if authentication_status and db.get_user(username)['isEval']:
     with st.sidebar:
         selected = option_menu(
             menu_title = 'Menu',
-            options = ['Home', 'Car', 'Bike', 'Contact'],
-            icons = ['house', '', 'bicycle', 'envelope'],
+            options = ['Home', 'Car', 'Bike', 'Evaluated Vehicles'],
+            icons = ['house', 'speedometer', 'bicycle', 'check2-circle'],
             menu_icon = 'cast',
         )
         # Logout
@@ -1050,6 +1050,19 @@ if authentication_status and db.get_user(username)['isEval']:
                     db.update_user(st.session_state.desired_user_bike, updates={'form_data':st.session_state.val2})
                     st.success("Feedback submitted!")
 
+#############################################################################################################################
+
+    if selected == 'Evaluated Vehicles':
+        st.write("This is where evaluated vehicles stay")
+        # users = db.fetch_all_users()
+        # usecase = {user['name']:user['key'] for user in users}
+        # evaluated_users = [user for user in users if 'bike' in user['type_data'] and not user['isEval']]
+        # data2 = [{l['name']:(l['form_data'], l['images'])} for l in evaluated_users]
+        # bike_usernames = [list(x.keys())[0] for x in data2]
+        # col1, col2 = st.columns(2)
+        # with col1:
+        #     with st.form(key='eval_form'):
+        #         vehicle = st.selectbox('Choose Vehicle', options=['Bike', 'Car'])
 
 
 # Auth edge cases
