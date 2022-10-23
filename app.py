@@ -597,6 +597,7 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 # if auth status is true and user in evaluator
 if authentication_status and db.get_user(username)['isEval']:
+    # Car session_states
     if 'usercars' not in st.session_state:
         st.session_state.usercars = []
     if 'desired_user' not in st.session_state:
@@ -605,6 +606,17 @@ if authentication_status and db.get_user(username)['isEval']:
         st.session_state.i = {}
     if 'val' not in st.session_state:
         st.session_state.val = []
+
+    # Bike session_states
+    if 'userbikes' not in st.session_state:
+        st.session_state.userbikes = []
+    if 'desired_user_bike' not in st.session_state:
+        st.session_state.desired_user_bike = None
+    if 'i2' not in st.session_state:
+        st.session_state.i2 = {}
+    if 'val2' not in st.session_state:
+        st.session_state.val = []
+    
     with st.sidebar:
         selected = option_menu(
             menu_title = 'Menu',
@@ -855,8 +867,188 @@ if authentication_status and db.get_user(username)['isEval']:
                     db.update_user(st.session_state.desired_user, updates={'form_data':st.session_state.val})
                     st.success("Feedback submitted!")
 
-        
-        
+#############################################################################################################################
+
+    bike_form = {}
+    val2 = []
+    bikes = []
+    userbikes = []
+    needed_data2 = []
+    # Bike
+    if selected == 'Bike':
+        left, mid, right = st.columns(3)
+        with mid:
+            st.header('EVALUATOR DASHBOARD')
+        st.write('SELECT VEHICLE TO EVALUATE')
+        users = db.fetch_all_users()
+        usecase = {user['name']:user['key'] for user in users}
+        bike_users = [user for user in users if 'bike' in user['type_data'] and not user['isEval']]
+        data2 = [{l['name']:(l['form_data'], l['images'])} for l in bike_users]
+        bike_usernames = [list(x.keys())[0] for x in data2]
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.form(key='form2'): # Bike form
+                bike_user = st.selectbox('Users',options=bike_usernames)
+                bike_user_button = st.form_submit_button(label='Select User')
+            if bike_user_button:
+                if 'bike_user_button' not in st.session_state:
+                    st.session_state['bike_user_button'] = True
+                for i in data2:
+                    if list(i.keys())[0] == bike_user:
+                        val2 = i[bike_user][0]
+                st.session_state.val2 = val2 # Saving for later - eval feedback
+                for i in val2:
+                    if i['Type'] == 'bike' and not i['isEvaluated']:
+                        bikes.append(i['Bike'])
+
+                for i in val2:
+                    if i['Type'] == 'bike' and not i['isEvaluated']:
+                        userbikes.append(i)
+                    
+                
+                # print(val)
+                # for i in val:
+                #     if i['Type'] == 'bike' or not i['isEvaluated']:
+                #         needed_data.append(i)
+                
+                        
+        #######################################
+                st.session_state.userbikes = userbikes # Used later for eval feedback form
+                if len(userbikes) != 0:
+                    i2 = userbikes[0] # Selecting the first form in the form data(which is the first uploaded one)
+                    try:
+                        st.session_state.val2.remove(i2)
+                    except:
+                        pass
+                    st.session_state.i2 = i2
+                    st.write(f'Bike : {i2["Bike"]}')
+                    st.write(f'Brand : {i2["Bike_Brand"]}')
+                    st.write(f'Kilometers Driven : {i2["Kilometers_Driven"]}')
+                    st.write(f'City : {i2["City"]}')
+                    st.write(f'Original Price : {i2["Original_Price"]}')
+                    st.write(f'Owner Type : {i2["Owner_Type"]}')
+                    st.write(f'Power : {i2["Power"]}')
+                    st.write(f'Predicted Price : {i2["Predicted_price"]}')
+                    st.write(f'Date of Request : {datetime.fromtimestamp(i2["Time_Stamp"]).date()}')
+                    st.write(f'Year : {i2["Year"]}')
+                    # Image display
+                    desired_user_bike = usecase[bike_user]
+                    st.session_state.desired_user_bike = desired_user_bike # Saving for later
+                    test_user = db.get_user(desired_user_bike) # Getting user details
+                    user_res = db.get_user(desired_user_bike) # Getting cur user details
+                    user_images = user_res['images'] # Getting the name of images from user_db
+                    # res_image = test_user['images'] # Getting image name from deta drive
+                    arr2 = [] # Contains user specific images
+                    for j in range(len(user_images)):
+                        str_manip = f'bike-{i2["Bike"]}-'
+                        if user_images[j].startswith(str_manip):
+                            arr2.append(user_images[j])
+                    if len(arr2) != 0:
+                        arr = [] # Contains actual images
+                        mark2 = """  """     # html dynamic image generate string
+                        for k in range(len(arr2)):
+                            im = drive.get(arr2[k])
+                            contents = im.read()
+                            data_url = base64.b64encode(contents).decode('utf-8')
+                            if k == 0:  # If the image item is first one keep the first slide to active
+                                des_str = f""" <div class="carousel-item active">
+                                <img class="d-block w-100" src="data:image/png;base64, {data_url}" alt="First slide">
+                                </div> """
+                            elif k != 0:  # If the image item is not first one keep the -- keep the remaining slides without active tag
+                                des_str = f""" <div class="carousel-item">
+                                <img class="d-block w-100" src="data:image/png;base64, {data_url}" alt="First slide">
+                                </div> """
+                            mark2 += des_str
+
+
+
+                        ######################################################################################### 
+                        # Import bootstrap cdn to html  
+                        mark1 = """ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+                                    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                                <style>
+                                    .carousel {{
+                                    width:640px;
+                                    height:360px;
+                                    }}
+                                    image{{
+                                        height:640px;
+                                        width:360px;
+                                    }}
+                                </style>
+                                <div class="carousel-inner"> """
+                        mark3 = """ </div>
+                                <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                                </div>
+
+                                <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+                                    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+                                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script> """
+                    
+                        # html rendering
+                        res_html = mark1 + mark2 + mark3
+                        components.html(res_html, height=350, width=600)
+
+                        #     file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8) # Converting image(deta object) to bytearray using numpy
+                        #     opencv_image = cv2.imdecode(file_bytes, 1) # Decoding the bytearray to image(Byte stream)
+                        #     arr.append(opencv_image)
+                        # st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+
+                        # im = drive.get(res_image)
+                        # im2 = drive.get(res_image2)
+                        # file_bytes2 = np.asarray(bytearray(im2.read()), dtype=np.uint8)
+                        # opencv_image2 = cv2.imdecode(file_bytes2, 1)
+                        # arr = [opencv_image, opencv_image2]
+                        # st.image(arr, channels = 'BGR', output_format='PNG', width=150)
+                    
+                    else: # if no pics
+                        st.warning("User have not uploaded any images")
+                    
+                else: # If no cars to evaluate
+                    st.warning("No bikes to evaluate for the selected user")
+
+                    
+                # Evaluator feedback form
+            st.header("This is feedback form of evaluator")
+            with st.form(key='feed_form_bike', clear_on_submit=True):
+                feedback = st.text_input('Give feedback to the vehicle')
+                evaluated_price = st.text_input('Evaluated Price')
+                submit_button_feedback = st.form_submit_button(label='Submit Feedback')
+                # alternate way
+                # if 'submit_button_feedback' not in st.session_state:
+                #     st.session_state.feedback = submit_button_feedback
+                if submit_button_feedback and not evaluated_price == "" and not feedback == "":
+                    # final form -> get the old form and modify it
+                    final_form = st.session_state.i2
+                    # final_userbikes -> form data which contains all the user forms in an array
+                    final_userbikes = st.session_state.userbikes
+                    new_form_data = {
+                    "Bike": final_form['Bike'],
+                    "Bike_Brand": final_form['Bike_Brand'],
+                    "City": final_form['City'],
+                    "Eval_Price": evaluated_price,
+                    "Evaluator_Id": username,
+                    "Feedback": feedback,
+                    "Kilometers_Driven": final_form['Kilometers_Driven'],
+                    "Original_Price": final_form['Original_Price'],
+                    "Owner_Type": final_form['Owner_Type'],
+                    "Power": final_form['Power'],
+                    "Predicted_price": final_form['Predicted_price'],
+                    "Time_Stamp": final_form['Time_Stamp'],
+                    "Type": final_form['Type'],
+                    "Year": final_form['Year'],
+                    "isEvaluated": True
+                    }
+                    st.session_state.val2.append(new_form_data) # Appending the updated form data to the end
+                    db.update_user(st.session_state.desired_user_bike, updates={'form_data':st.session_state.val2})
+                    st.success("Feedback submitted!")
 
 
 
