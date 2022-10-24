@@ -1,9 +1,4 @@
-from multiprocessing import allow_connection_pickling
-from typing import final
-from cv2 import findEssentialMat
 import streamlit as st
-import cv2
-import numpy as np
 import requests
 import os
 import uuid
@@ -107,7 +102,7 @@ if authentication_status and not db.get_user(username)['isEval']:
         selected = option_menu(
             menu_title = 'Menu',
             options = ['Home', 'Car', 'Bike', 'Contact'],
-            icons = ['house', '', 'bicycle', 'envelope'],
+            icons = ['house', 'speedometer', 'bicycle', 'envelope'],
             menu_icon = 'cast',
         )
         # Logout
@@ -1070,9 +1065,91 @@ if authentication_status and db.get_user(username)['isEval']:
                 des_user_data = [x for x in data if list(x.keys())[0] == user][0]
                 des_user_form_data = des_user_data[user][0]
                 final_data = [x for x in des_user_form_data if x['isEvaluated']]
-                st.write(final_data)
-                # st.write(data)
+                # Bootstrap cards and collapse combined for evaluated vehicles
+                mark1 = """ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> """
+                mark3 = """ <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+                                        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+                                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script> """
+                for form in final_data:
+                    if form['Type'] == 'car':
+                        mark2 = f""" <div id="accordion">
 
+                            <div class="card">
+                                <div class="card-header" id="headingOne">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    {form['Car']}
+                                    </button>
+                                </h5>
+                                </div>
+
+                                <div class="card-body">
+                                    <blockquote class="blockquote mb-0">
+                                        <div><i><small>Location : {form['Location']}</small></i></div>
+                                        <div><i><small>Year : {form['Year']}</small></i></div>
+                                        <div><i><small>Fuel Type : {form['Fuel_Type']}</small></i></div>
+                                        <div><i><small>Kilometers Driven : {form['Kilometers_Driven']}</small></i></div>
+                                    </blockquote>
+                                </div>
+
+                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                                <div class="card-body">
+                                    <div><b>Description of Car</b></div>
+                                    <div><em>Car Model : {form['Car']} </em></div>
+                                    <div><em>Owner Type : {form['Owner_Type']} </em></div>
+                                    <div><em>Fuel Type : {form['Fuel_Type']} </em></div>
+                                    <div><em>Power : {form['Power']} </em></div>
+                                    <div><em>Original Price : {form['Original_Price']}  </em></div>
+                                    <div><em>Evaluated Price : {form['Eval_Price']} lakhs</em></div>
+                                    <div><em>Predicted Price : {form['Predicted_price']} </em></div>
+                                    <div><em>Evaluated by : {form['Evaluator_Id']} </em></div>
+                                    <div><em>Feedback by Evaluator : {form['Feedback']} </em></div>
+                                    <div><em>Submitted date for Evaluation : {datetime.fromtimestamp(form['Time_Stamp']).date()} </em></div>
+
+                                </div>
+                                </div>
+                            </div> """
+
+                    if form['Type'] == 'bike':
+                        mark2 = f""" <div id="accordion">
+
+                            <div class="card">
+                                <div class="card-header" id="headingOne">
+                                <h5 class="mb-0">
+                                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    {form['Bike']}
+                                    </button>
+                                </h5>
+                                </div>
+
+                                <div class="card-body">
+                                    <blockquote class="blockquote mb-0">
+                                    <div><i><small>City : {form['City']}</small></i></div>
+                                        <div><i><small>Year : {form['Year']}</small></i></div>
+                                        <div><i><small>Bike Brand : {form['Bike_Brand']}</small></i></div>
+                                        <div><i><small>Kilometers Driven : {form['Kilometers_Driven']}</small></i></div>
+                                    </blockquote>
+                                </div>
+
+                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                                <div class="card-body">
+                                    <div><b>Description of Bike</b></div>
+                                    <div><em>Bike Model : {form['Bike']} </em></div>
+                                    <div><em>Bike Brand : {form['Bike_Brand']} </em></div>
+                                    <div><em>Owner Type : {form['Owner_Type']} </em></div>
+                                    <div><em>Power : {form['Power']} </em></div>
+                                    <div><em>Original Price : {form['Original_Price']}  </em></div>
+                                    <div><em>Evaluated Price : {form['Eval_Price']}</em></div>
+                                    <div><em>Predicted Price : {form['Predicted_price']} </em></div>
+                                    <div><em>Evaluated by : {form['Evaluator_Id']} </em></div>
+                                    <div><em>Feedback by Evaluator : {form['Feedback']} </em></div>
+                                    <div><em>Submitted date for Evaluation : {datetime.fromtimestamp(form['Time_Stamp']).date()} </em></div>
+
+                                </div>
+                                </div>
+                            </div> """
+                    mark_html = mark1+mark2+mark3
+                    components.html(mark_html, height=200, scrolling=True)
 
 # Auth edge cases
 elif authentication_status == False:

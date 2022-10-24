@@ -5,6 +5,4 @@ streamlit==1.13.0
 streamlit_authenticator==0.2.1
 streamlit_lottie==0.0.3
 streamlit_option_menu==0.3.2
-numpy==1.23.2
-pandas==1.4.3
-opencv-python-headless==4.6.0.66
+
