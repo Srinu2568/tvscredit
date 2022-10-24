@@ -1054,15 +1054,24 @@ if authentication_status and db.get_user(username)['isEval']:
 
     if selected == 'Evaluated Vehicles':
         st.write("This is where evaluated vehicles stay")
-        # users = db.fetch_all_users()
-        # usecase = {user['name']:user['key'] for user in users}
-        # evaluated_users = [user for user in users if 'bike' in user['type_data'] and not user['isEval']]
-        # data2 = [{l['name']:(l['form_data'], l['images'])} for l in evaluated_users]
-        # bike_usernames = [list(x.keys())[0] for x in data2]
-        # col1, col2 = st.columns(2)
-        # with col1:
-        #     with st.form(key='eval_form'):
-        #         vehicle = st.selectbox('Choose Vehicle', options=['Bike', 'Car'])
+        usecase = {user['name']:user['key'] for user in users}
+        # All users
+        all_users = {user['name']:user['key'] for user in users if not user['isEval']}
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.form(key='eval_form'):
+                user = st.selectbox('Choose a User', options=list(all_users.keys()))
+                vehicle_submit_button = st.form_submit_button('Choose')
+            if vehicle_submit_button:
+                users = db.fetch_all_users()
+                our_users = [user for user in users if 'car' in user['type_data'] and not user['isEval']]
+                data = [{l['name']:(l['form_data'], l['images'])} for l in our_users]
+                user_key = all_users[user]
+                des_user_data = [x for x in data if list(x.keys())[0] == user][0]
+                des_user_form_data = des_user_data[user][0]
+                final_data = [x for x in des_user_form_data if x['isEvaluated']]
+                st.write(final_data)
+                # st.write(data)
 
 
 # Auth edge cases
