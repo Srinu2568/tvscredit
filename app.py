@@ -344,6 +344,15 @@ if authentication_status and not db.get_user(username)['isEval']:
                     db.update_user(username, updates={'images':pics, 'type_data':car_list, 'form_data':forms})
                     st.success('Thanks for uploading!')
 
+        st.subheader('Upload link of 360 Interior view for your car(BETA)')
+        with st.form(key='form360'):
+            link = st.text_input('Upload 360 interior link')
+            link_button = st.form_submit_button('Submit Link')
+        if link_button:
+            db.update_user(username, updates={'link':link})
+        st.write('[Learn More >](https://panoraven.com/blog/en/how-to-take-360-images-with-a-smartphone/)')
+        
+
 
         with col2:
             def load_lottieurl(url):
@@ -631,17 +640,17 @@ if authentication_status and db.get_user(username)['isEval']:
     # Home
     if selected == 'Home':
         st.write('Hello Evaluator')
-        test_user = db.get_user('test_user') # Getting user details
-        res_image = test_user['images'][0] # Getting image name from deta drive
-        res_image2 = test_user['images'][1]
-        arr_im = [res_image, res_image2]
-        im = drive.get(res_image)
-        im2 = drive.get(res_image2)
-        # with open(im, 'rb') as image2string:
-        contents = im.read()
-        data_url = base64.b64encode(contents).decode('utf-8')
-        contents2 = im2.read()
-        data_url2 = base64.b64encode(contents2).decode('utf-8')
+        # test_user = db.get_user('test_user') # Getting user details
+        # res_image = test_user['images'][0] # Getting image name from deta drive
+        # res_image2 = test_user['images'][1]
+        # arr_im = [res_image, res_image2]
+        # im = drive.get(res_image)
+        # im2 = drive.get(res_image2)
+        # # with open(im, 'rb') as image2string:
+        # contents = im.read()
+        # data_url = base64.b64encode(contents).decode('utf-8')
+        # contents2 = im2.read()
+        # data_url2 = base64.b64encode(contents2).decode('utf-8')
         # file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8) # Converting image(deta object) to bytearray using numpy
         # cs = base64.b64encode(im.read())
         # st.write()
@@ -650,42 +659,9 @@ if authentication_status and db.get_user(username)['isEval']:
         # opencv_image2 = cv2.imdecode(file_bytes2, 1)
         # arr = [opencv_image, opencv_image2]
         # st.image(arr, channels = 'BGR', output_format='PNG', width=150)
-        components.html(
-            f"""
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-        <style>
-            .carousel {{
-            width:640px;
-            height:360px;
-            }}
-        </style>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-            <img class="d-block w-100" src="data:image/png;base64, {data_url}" alt="First slide">
-            </div>
-            <div class="carousel-item">
-            <img class="d-block w-100" src="data:image/png;base64,{data_url2}" alt="Second slide">
-            </div>
-            <div class="carousel-item">
-            <img class="d-block w-100" src="https://www.princeton.edu/sites/default/files/styles/half_2x/public/images/2022/02/KOA_Nassau_2697x1517.jpg?itok=iQEwihUn" alt="Third slide">
-            </div>
-        </div>
-        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-        </a>
-        </div>
-
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>""",
-            height=350, width=600
-        )
+        # res = f"""<iframe width="90%" height="500px" allowFullScreen="true" allow="accelerometer; magnetometer; gyroscope" style="display:block; margin:20px auto; border:0 none; max-width:880px;border-radius:8px; box-shadow: 0 1px 1px rgba(0,0,0,0.11),0 2px 2px rgba(0,0,0,0.11),0 4px 4px rgba(0,0,0,0.11),0 6px 8px rgba(0,0,0,0.11),0 8px 16px rgba(0,0,0,0.11);" src="https://panoraven.com/en/slider/vpUsXjEe0F"></iframe>
+        #         """
+        # components.html(res, height=600, scrolling=True)
     
     # Car
     car_form = {}
@@ -813,6 +789,14 @@ if authentication_status and db.get_user(username)['isEval']:
                         # html rendering
                         res_html = mark1 + mark2 + mark3
                         components.html(res_html, height=350, width=600)
+
+                        try:
+                            if user_res['link']:
+                                res = f"""<iframe width="90%" height="500px" allowFullScreen="true" allow="accelerometer; magnetometer; gyroscope" style="display:block; margin:20px auto; border:0 none; max-width:880px;border-radius:8px; box-shadow: 0 1px 1px rgba(0,0,0,0.11),0 2px 2px rgba(0,0,0,0.11),0 4px 4px rgba(0,0,0,0.11),0 6px 8px rgba(0,0,0,0.11),0 8px 16px rgba(0,0,0,0.11);" src="{user_res['link']}"></iframe>
+                                        """
+                                components.html(res, height=600, scrolling=True)
+                        except:
+                            pass
 
                         #     file_bytes = np.asarray(bytearray(im.read()), dtype=np.uint8) # Converting image(deta object) to bytearray using numpy
                         #     opencv_image = cv2.imdecode(file_bytes, 1) # Decoding the bytearray to image(Byte stream)
