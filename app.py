@@ -846,11 +846,11 @@ if authentication_status and db.get_user(username)['isEval']:
                     st.success("Feedback submitted!")
                     # Check/Tick anime
                     lottie_api = load_lottieurl('https://assets2.lottiefiles.com/packages/lf20_JEo4aLm4z5.json')
-                    st_lottie(lottie_api, height=300, key='check')
+                    st_lottie(lottie_api, height=300, key='check_3')
 
         with col2:
             lottie_api = load_lottieurl('https://assets10.lottiefiles.com/packages/lf20_dnbxh3s8.json')
-            st_lottie(lottie_api, height=300, key='check')
+            st_lottie(lottie_api, height=300, key='check_4')
 
 
 #############################################################################################################################
@@ -1065,6 +1065,7 @@ if authentication_status and db.get_user(username)['isEval']:
                 final_data = [x for x in des_user_form_data if x['isEvaluated']]
                 # Bootstrap cards and collapse combined for evaluated vehicles
                 mark1 = """ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> 
+                        <body style="background-color:#0E1117;" ></black>
                         <style>
                             body{
                                 margin-top:20px;
@@ -1175,7 +1176,7 @@ if authentication_status and db.get_user(username)['isEval']:
                                 </h5>
                                 </div>
 
-                                <divrr class="card-body">
+                                <div class="card-body">
                                     <blockquote class="blockquote mb-0">
                                     <div><i><small>City : {form['City']}</small></i></div>
                                         <div><i><small>Year : {form['Year']}</small></i></div>
@@ -1206,7 +1207,7 @@ if authentication_status and db.get_user(username)['isEval']:
 
         with col2:
             lottie_api = load_lottieurl('https://assets5.lottiefiles.com/packages/lf20_niyfyoqs.json')
-            st_lottie(lottie_api, height=300, key='check')
+            st_lottie(lottie_api, height=280, key='check_2')
 
 # Auth edge cases
 elif authentication_status == False:
