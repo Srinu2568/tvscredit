@@ -76,8 +76,11 @@ st.markdown(html, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
 # User Authentication
+@st.cache
+def get_users():
+    return db.fetch_all_users()
 
-users = db.fetch_all_users() # It will return a json containing key, name, password(hashed), isEval(boolean)
+users = get_users() # It will return a json containing key, name, password(hashed), isEval(boolean)
 
 
 usernames = [user['key'] for user in users]
@@ -98,6 +101,13 @@ authenticator = stauth.Authenticate(credentials,
 
 name, authentication_status, username = authenticator.login('Login', 'main')
     
+@st.cache
+def load_lottieurl(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    else:
+        return r.json()
 
 
 
@@ -118,12 +128,6 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 #     # Home Page
     if selected == 'Home':
-        def load_lottieurl(url):
-            r = requests.get(url)
-            if r.status_code != 200:
-                return None
-            else:
-                return r.json()
         # API DOC URL FOR CAR
         URL = 'https://tvs-price-predictor.herokuapp.com/docs'
         # API DOC URL FOR BIKE
@@ -355,12 +359,6 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 
         with col2:
-            def load_lottieurl(url):
-                r = requests.get(url)
-                if r.status_code != 200:
-                    return None
-                else:
-                    return r.json()
             lottie_api = load_lottieurl('https://assets5.lottiefiles.com/packages/lf20_kqfglvmb.json')
             st_lottie(lottie_api, height=500, key='api')
 
@@ -552,14 +550,9 @@ if authentication_status and not db.get_user(username)['isEval']:
                     # Update the user's images with uploaded images
                     db.update_user(username, updates={'images':bike_pics, 'type_data':bike_list, 'form_data':forms})
                     st.success('Thanks for uploading!')
+                    
 
         with col2:
-            def load_lottieurl(url):
-                r = requests.get(url)
-                if r.status_code != 200:
-                    return None
-                else:
-                    return r.json()
             lottie_api = load_lottieurl('https://assets8.lottiefiles.com/packages/lf20_ztjvhpit.json')
             st_lottie(lottie_api, height=500, key='api')
 
@@ -851,6 +844,14 @@ if authentication_status and db.get_user(username)['isEval']:
                     st.session_state.val.append(new_form_data) # Appending the updated form data to the end
                     db.update_user(st.session_state.desired_user, updates={'form_data':st.session_state.val})
                     st.success("Feedback submitted!")
+                    # Check/Tick anime
+                    lottie_api = load_lottieurl('https://assets2.lottiefiles.com/packages/lf20_JEo4aLm4z5.json')
+                    st_lottie(lottie_api, height=300, key='check')
+
+        with col2:
+            lottie_api = load_lottieurl('https://assets10.lottiefiles.com/packages/lf20_dnbxh3s8.json')
+            st_lottie(lottie_api, height=300, key='check')
+
 
 #############################################################################################################################
 
@@ -1034,6 +1035,13 @@ if authentication_status and db.get_user(username)['isEval']:
                     st.session_state.val2.append(new_form_data) # Appending the updated form data to the end
                     db.update_user(st.session_state.desired_user_bike, updates={'form_data':st.session_state.val2})
                     st.success("Feedback submitted!")
+                    # Check/Tick anime
+                    lottie_api = load_lottieurl('https://assets2.lottiefiles.com/packages/lf20_JEo4aLm4z5.json')
+                    st_lottie(lottie_api, height=300, key='check')
+
+        with col2:
+            lottie_api = load_lottieurl('https://assets2.lottiefiles.com/packages/lf20_dnbxh3s8.json')
+            st_lottie(lottie_api, height=300, key='valuate')
 
 #############################################################################################################################
 
@@ -1195,6 +1203,10 @@ if authentication_status and db.get_user(username)['isEval']:
                             </div> """
                     mark_html = mark1+mark2+mark3
                     components.html(mark_html, height=300, scrolling=True)
+
+        with col2:
+            lottie_api = load_lottieurl('https://assets5.lottiefiles.com/packages/lf20_niyfyoqs.json')
+            st_lottie(lottie_api, height=300, key='check')
 
 # Auth edge cases
 elif authentication_status == False:
