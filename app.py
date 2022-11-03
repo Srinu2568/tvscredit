@@ -134,26 +134,16 @@ if authentication_status and not db.get_user(username)['isEval']:
         URL2 = 'https://tvs-price-predictor-bike.herokuapp.com/docs'
 
         # ---stack lottie transition---
-        lottie_api = load_lottieurl('https://assets10.lottiefiles.com/packages/lf20_8NYY2Y.json')
+        lottie_api = load_lottieurl('https://assets9.lottiefiles.com/packages/lf20_3vbOcw.json')
 
         with st.container():
             # ------ HEADER SECTION-------
             left_column, right_column = st.columns(2)
             with left_column:
-                st.title('TVS CREDIT - Effortless Price Predictions by AI:speech_balloon:')
-                st.subheader('As per the trends in market :chart_with_upwards_trend:')
-                st.write('''A few years ago, the ratio of new cars to used cars 
-                was 1:1.2 which is now at 1:2.2. The used car market in India 
-                has been the center of attention in the slow growing 
-                automotive industry in India.''')
-                st.subheader('How our API is helpful :star:')
-                st.write('''Keeping the demand of used cars in mind, 
-                This website helps users to predict the price to sell/buy the car
-                with the help of AI and ML.''')
-                st.subheader('How to use? :hushed:')
-                st.write('The API is encoded, only the website can decode and call it.')
-                st.write('Check out the API here :fire:')
-                st.write('[Learn More >](https://tvs-price-predictor.herokuapp.com/docs)')
+                st.title('What we offer?')
+                st.subheader('Use Car loans and Two Wheeler Loans that are just Right for you')
+                st.write('Our Used Car loans let you drive home that car you have always wanted')
+                st.write('[Learn More >](https://www.tvscredit.com/loans/used-car-loans)')
             # Lottie element
             with right_column:
                 st_lottie(lottie_api, height=300, key='api')
@@ -348,7 +338,7 @@ if authentication_status and not db.get_user(username)['isEval']:
                     db.update_user(username, updates={'images':pics, 'type_data':car_list, 'form_data':forms})
                     st.success('Thanks for uploading!')
 
-        st.subheader('Upload link of 360 Interior view for your car(BETA)')
+        st.subheader('Upload link of 360 Interior view for your car(Optional)')
         with st.form(key='form360'):
             link = st.text_input('Upload 360 interior link')
             link_button = st.form_submit_button('Submit Link')
@@ -558,7 +548,7 @@ if authentication_status and not db.get_user(username)['isEval']:
 
 #     # Contact Page
     if selected == 'Contact':
-        st.header(':mailbox: Get In touch With Me!')
+        st.header(':mailbox: Contact Us!')
 
         # ---Contact Form---
         contact_form = """
@@ -579,19 +569,19 @@ if authentication_status and not db.get_user(username)['isEval']:
                 st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
         local_css("style/style.css")
 
-        st.subheader('Follow me on')
+        st.subheader('Follow us on')
         html = f"""<ul>
                 <li style="display:inline-block;">
-                    <a href='{'https://www.linkedin.com/in/srinivas-menta-b96977214/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>
+                    <a href='{'https://www.linkedin.com/company/tvs-credit-services-ltd-/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>
                 </li>
                 <li style="display:inline-block;">
-                    <a href='{'https://github.com/Srinu2568'}'><img src='https://icones.pro/wp-content/uploads/2021/06/icone-github-bleu.png' width='25' height='25'></a>
+                    <a href='{'https://www.facebook.com/TVSCREDIT/'}'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/768px-Facebook_Logo_%282019%29.png' width='25' height='25'></a>
                 </li>
                 <li style="display:inline-block;">
-                    <a href='{'https://www.instagram.com/mnv_srinivas/'}'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/2048px-Instagram_icon.png' width='25' height='25'></a>
+                    <a href='{'https://www.instagram.com/tvscredit_official/'}'><img src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/2048px-Instagram_icon.png' width='25' height='25'></a>
                 </li>
                 <li style="display:inline-block;">
-                    <a href='{'https://medium.com/@mnvsrinivas1'}'><img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4tZSzY3tgMrgLEyJWY0fChWR-7gwDCHep0UEy_PE0sSiu_gUdXo6pM402iTW-jS4W0XY&usqp=CAU' width='25' height='25'></a>
+                    <a href='{'https://twitter.com/TVSCredit'}'><img src='https://www.freepnglogos.com/uploads/twitter-logo-png/twitter-logo-vector-png-clipart-1.png' width='25' height='25'></a>
                 </li>
             </ul>"""
         # html = f"<a href='{'https://www.linkedin.com/in/srinivas-menta-b96977214/'}'><img src='https://www.sfdcamplified.com/wp-content/uploads/2019/04/linkedin-logo-copy.png' width='25' height='25'></a>"
@@ -632,7 +622,9 @@ if authentication_status and db.get_user(username)['isEval']:
 
     # Home
     if selected == 'Home':
-        st.write('Hello Evaluator')
+        st.write(f'Hello {name}')
+        lottie_api = load_lottieurl('https://assets9.lottiefiles.com/packages/lf20_rbtawnwz.json')
+        st_lottie(lottie_api, height=600, key='valuate', quality='high')
         # test_user = db.get_user('test_user') # Getting user details
         # res_image = test_user['images'][0] # Getting image name from deta drive
         # res_image2 = test_user['images'][1]
