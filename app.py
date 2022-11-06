@@ -99,7 +99,9 @@ for un, name, pw in zip(usernames, names, hashed_passwords):
 authenticator = stauth.Authenticate(credentials,
 'some_cookie_name','some_signature_key',cookie_expiry_days=30)
 
-name, authentication_status, username = authenticator.login('Login', 'main')
+c1, c2, c3 = st.columns(3)
+with c2:
+    name, authentication_status, username = authenticator.login('Login', 'main')
     
 @st.cache
 def load_lottieurl(url):
@@ -1203,6 +1205,8 @@ if authentication_status and db.get_user(username)['isEval']:
 
 # Auth edge cases
 elif authentication_status == False:
-    st.error('Username/password is incorrect')
+    with c2:
+        st.error('Username/password is incorrect')
 elif authentication_status == None:
-    st.warning('Please enter your username and password')
+    with c2:
+        st.warning('Please enter your username and password')
