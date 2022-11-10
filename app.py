@@ -805,7 +805,7 @@ if authentication_status and db.get_user(username)['isEval']:
 
                     
                 # Evaluator feedback form
-            st.header("This is feedback form of evaluator")
+            st.write("GIVE FEEDBACK")
             with st.form(key='feed_form', clear_on_submit=True):
                 feedback = st.text_input('Give feedback to the vehicle')
                 evaluated_price = st.text_input('Evaluated Price')
@@ -996,7 +996,7 @@ if authentication_status and db.get_user(username)['isEval']:
 
                     
                 # Evaluator feedback form
-            st.header("This is feedback form of evaluator")
+            st.write("GIVE FEEDBACK")
             with st.form(key='feed_form_bike', clear_on_submit=True):
                 feedback = st.text_input('Give feedback to the vehicle')
                 evaluated_price = st.text_input('Evaluated Price')
