@@ -5,9 +5,11 @@ Deployments :
 https://tvscredit.herokuapp.com/
 https://tvscredit.streamlit.app/
 
-Credentials : 
-for evaluator : test_eval
-for customer : test_user
+# Credentials 
+for evaluator : 
+test_eval
+for customer : 
+test_user
 pass : 123456
 
 Here's the Swagger UI for Car API - https://tvs-price-predictor.herokuapp.com/docs
