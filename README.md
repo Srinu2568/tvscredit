@@ -6,7 +6,7 @@ https://tvscredit.herokuapp.com/
 https://tvscredit.streamlit.app/
 
 # Credentials 
-##for evaluator : 
+## for evaluator : 
 test_eval
 ## for customer : 
 test_user
