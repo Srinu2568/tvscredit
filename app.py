@@ -314,7 +314,7 @@ if authentication_status and not db.get_user(username)['isEval']:
                 with st.spinner('Uploading....'):
                     for i in range(len(pic_names)):
                         unique_id = str(uuid.uuid4())
-                        name = 'car-'+ form_data['Car'] + '-' +unique_id + '-' + uploaded_file.name # car was added infront of string to seperate it from bikes
+                        name = 'car-'+ form_data['Car'] + '-' +unique_id + '-' + pic_names[i] # car was added infront of string to seperate it from bikes
                         path_file = path='./'+pic_names[i]
                         drive.put(name, path=path)
                         os.remove(pic_names[i]) # Removes the files in local storage
@@ -517,7 +517,7 @@ if authentication_status and not db.get_user(username)['isEval']:
                 with st.spinner('Uploading....'):
                     for i in range(len(pic_names)):
                         unique_id = str(uuid.uuid4())
-                        name = 'bike-'+ bike_form_data['Bike'] + '-' +unique_id + '-' + uploaded_file.name # car was added infront of string to seperate it from bikes
+                        name = 'bike-'+ bike_form_data['Bike'] + '-' +unique_id + '-' + pic_names[i] # car was added infront of string to seperate it from bikes
                         path_file = path='./'+pic_names[i]
                         drive.put(name, path=path)
                         os.remove(pic_names[i]) # Removes the files in local storage
