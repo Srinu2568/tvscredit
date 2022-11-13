@@ -6,7 +6,7 @@ First, fire up :fire: the development server :rocket:
 ``` 
   streamlit run app.py
 ```
-Open [http://localhost:8080](http://localhost:8080) in your browser to see the website.
+Open [http://localhost:8501](http://localhost:8501) in your browser to see the website.
 
 
 # Deployments :rocket:
