@@ -198,7 +198,7 @@ if authentication_status and not db.get_user(username)['isEval']:
                 else:
                     st.success('Thanks for Filling!')
                     # ---Calling the API---
-                    URL = 'https://tvs-price-predictor.herokuapp.com/predict'
+                    URL = 'https://tvs-price-predictor.onrender.com/predict'
 
                     # Best Condition Pred
                     PARAMS = {
