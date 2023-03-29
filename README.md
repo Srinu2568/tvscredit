@@ -21,6 +21,6 @@ test_user
 ### Password
 pass : 123456
 
-Here's the Swagger UI for Car API - https://tvs-price-predictor.herokuapp.com/docs
+Here's the Swagger UI for Car API - https://tvs-price-predictor.onrender.com/docs
 
 Here's the Swagger UI for Bike API - https://tvs-price-predictor-bike.herokuapp.com/docs
